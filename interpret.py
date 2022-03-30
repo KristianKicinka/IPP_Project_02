@@ -66,12 +66,30 @@ def process_arguments():
         input_path = load_args.get("input")[0]
     elif load_args.get("input") is None:
         source_path = load_args.get("source")[0]
+
     return input_path, source_path
+
+
+def load_xml_file(src_file):
+
+    if src_file is None:
+        tmp_tree = ET.parse(sys.stdin)
+    else:
+        tmp_tree = ET.parse(source_file)
+
+    return tmp_tree
+
+
+def check_xml_file(tmp_tree):
+    root = tmp_tree.getroot()
+    print(root)
 
 
 if __name__ == '__main__':
     print(f"This is interpreter")
     input_file, source_file = process_arguments()
+    tree = load_xml_file(source_file)
+    check_xml_file(tree)
 
     print(input_file)
     print(source_file)
