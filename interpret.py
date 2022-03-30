@@ -18,6 +18,40 @@ WRONG_OPERAND_VALUE_ERROR = 57
 STRING_WORKING_ERROR = 58
 INTERNAL_ERROR = 99
 
+# Objects
+
+
+class Instruction:
+
+    def __init__(self, opcode, order):
+        self.opcode = opcode
+        self.order = order
+        self.arguments = []
+
+    def _get_opcode(self):
+        return self.opcode
+
+    def _get_order(self):
+        return self.order
+
+    def _add_argument(self, argument):
+        self.arguments.append(argument)
+
+
+class Argument:
+
+    def __init__(self, arg_type, value):
+        self.arg_type = arg_type
+        self.value = value
+
+    def _get_arg_type(self):
+        return self.arg_type
+
+    def _get_value(self):
+        return self.arg_type
+
+# Implementation
+
 
 def close_script(exit_code: int):
     if exit_code == PARAMETER_ERROR:
@@ -82,7 +116,27 @@ def load_xml_file(src_file):
 
 def check_xml_file(tmp_tree):
     root = tmp_tree.getroot()
-    print(root)
+
+    if root.tag != "program":
+        close_script(XML_FORMAT_ERROR)
+
+    for child_element in root:
+        if child_element.tag != "instruction":
+            close_script(XML_STRUCTURE_ERROR)
+        instruction_attr_list = list(child_element.attrib.keys())
+        if not("order" in instruction_attr_list) or not("opcode" in instruction_attr_list):
+            close_script(XML_FORMAT_ERROR)
+        for sub_element in child_element:
+            if not(re.match(r"arg[123]", sub_element.tag)):
+                close_script(XML_STRUCTURE_ERROR)
+            argument_attr_list = list(sub_element.attrib.keys())
+            if not("type" in argument_attr_list):
+                close_script(XML_FORMAT_ERROR)
+    print("GREAT SUCCESS !!")
+
+
+def load_instruction():
+    print("load")
 
 
 if __name__ == '__main__':
@@ -93,5 +147,3 @@ if __name__ == '__main__':
 
     print(input_file)
     print(source_file)
-
-
