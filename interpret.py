@@ -28,13 +28,13 @@ class Instruction:
         self.order = order
         self.arguments = []
 
-    def _get_opcode(self):
+    def get_opcode(self):
         return self.opcode
 
-    def _get_order(self):
+    def get_order(self):
         return self.order
 
-    def _add_argument(self, argument):
+    def add_argument(self, argument):
         self.arguments.append(argument)
 
 
@@ -44,10 +44,10 @@ class Argument:
         self.arg_type = arg_type
         self.value = value
 
-    def _get_arg_type(self):
+    def get_arg_type(self):
         return self.arg_type
 
-    def _get_value(self):
+    def get_value(self):
         return self.arg_type
 
 # Implementation
@@ -132,18 +132,30 @@ def check_xml_file(tmp_tree):
             argument_attr_list = list(sub_element.attrib.keys())
             if not("type" in argument_attr_list):
                 close_script(XML_FORMAT_ERROR)
-    print("GREAT SUCCESS !!")
 
 
-def load_instruction():
-    print("load")
+def load_instructions(tmp_tree):
+    tmp_instructions = []
+
+    root = tmp_tree.getroot()
+
+    for child_element in root:
+        instruction = Instruction(child_element.attrib.get("opcode"), child_element.attrib.get("order"))
+        for sub_child in child_element:
+            argument = Argument(sub_child.attrib.get("type"), sub_child.text)
+            instruction.add_argument(argument)
+        tmp_instructions.append(instruction)
+
+    return tmp_instructions
 
 
 if __name__ == '__main__':
-    print(f"This is interpreter")
+
     input_file, source_file = process_arguments()
     tree = load_xml_file(source_file)
     check_xml_file(tree)
+    instructions = load_instructions(tree)
 
     print(input_file)
     print(source_file)
+    print(instructions)
