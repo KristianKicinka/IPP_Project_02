@@ -221,139 +221,140 @@ def find_labels():
 # Execute functions
 
 
-def execute_defvar():
+def execute_defvar(instruction):
     print("defvar")
 
 
-def execute_pops():
+
+def execute_pops(instruction):
     print("pops")
 
 
-def execute_move():
+def execute_move(instruction):
     print("move")
 
 
-def execute_int2char():
+def execute_int2char(instruction):
     print("int2char")
 
 
-def execute_strlen():
+def execute_strlen(instruction):
     print("strlen")
 
 
-def execute_type():
+def execute_type(instruction):
     print("type")
 
 
-def execute_not():
+def execute_not(instruction):
     print("not")
 
 
-def execute_read():
+def execute_read(instruction):
     print("read")
 
 
-def execute_add():
+def execute_add(instruction):
     print("add")
 
 
-def execute_sub():
+def execute_sub(instruction):
     print("sub")
 
 
-def execute_mul():
+def execute_mul(instruction):
     print("mul")
 
 
-def execute_idiv():
+def execute_idiv(instruction):
     print("idiv")
 
 
-def execute_lt():
+def execute_lt(instruction):
     print("lt")
 
 
-def execute_gt():
+def execute_gt(instruction):
     print("gt")
 
 
-def execute_eq():
+def execute_eq(instruction):
     print("eq")
 
 
-def execute_and():
+def execute_and(instruction):
     print("and")
 
 
-def execute_or():
+def execute_or(instruction):
     print("or")
 
 
-def execute_str2int():
+def execute_str2int(instruction):
     print("str2int")
 
 
-def execute_concat():
+def execute_concat(instruction):
     print("concat")
 
 
-def execute_getchar():
+def execute_getchar(instruction):
     print("getchar")
 
 
-def execute_setchar():
+def execute_setchar(instruction):
     print("setchar")
 
 
-def execute_createframe():
+def execute_createframe(instruction):
     print("createframe")
 
 
-def execute_pushframe():
+def execute_pushframe(instruction):
     print("pushframe")
 
 
-def execute_popframe():
+def execute_popframe(instruction):
     print("popframe")
 
 
-def execute_return():
+def execute_return(instruction):
     print("return")
 
 
-def execute_break():
+def execute_break(instruction):
     print("break")
 
 
-def execute_call():
+def execute_call(instruction):
     print("call")
 
 
-def execute_jump():
+def execute_jump(instruction):
     print("jump")
 
 
-def execute_pushs():
+def execute_pushs(instruction):
     print("pushs")
 
 
-def execute_write():
+def execute_write(instruction):
     print("write")
 
 
-def execute_exit():
+def execute_exit(instruction):
     print("exit")
 
 
-def execute_dprint():
+def execute_dprint(instruction):
     print("dprint")
 
 
-def execute_jumpifeq():
+def execute_jumpifeq(instruction):
     print("jumpifeq")
 
 
-def execute_jumpifneq():
+def execute_jumpifneq(instruction):
     print("jumpifneq")
 
 
@@ -362,75 +363,75 @@ def interpret_instructions():
     for instruction in instructions:
         opcode = instruction.get_opcode()
         if opcode == "DEFVAR":
-            execute_defvar()
+            execute_defvar(instruction)
         elif opcode == "POPS":
-            execute_pops()
+            execute_pops(instruction)
         elif opcode == "MOVE":
-            execute_move()
+            execute_move(instruction)
         elif opcode == "INT2CHAR":
-            execute_int2char()
+            execute_int2char(instruction)
         elif opcode == "STRLEN":
-            execute_strlen()
+            execute_strlen(instruction)
         elif opcode == "TYPE":
-            execute_type()
+            execute_type(instruction)
         elif opcode == "NOT":
-            execute_not()
+            execute_not(instruction)
         elif opcode == "READ":
-            execute_read()
+            execute_read(instruction)
         elif opcode == "ADD":
-            execute_add()
+            execute_add(instruction)
         elif opcode == "SUB":
-            execute_sub()
+            execute_sub(instruction)
         elif opcode == "MUL":
-            execute_mul()
+            execute_mul(instruction)
         elif opcode == "IDIV":
-            execute_idiv()
+            execute_idiv(instruction)
         elif opcode == "LT":
-            execute_lt()
+            execute_lt(instruction)
         elif opcode == "GT":
-            execute_gt()
+            execute_gt(instruction)
         elif opcode == "EQ":
-            execute_eq()
+            execute_eq(instruction)
         elif opcode == "AND":
-            execute_and()
+            execute_and(instruction)
         elif opcode == "OR":
-            execute_or()
+            execute_or(instruction)
         elif opcode == "STR2INT":
-            execute_str2int()
+            execute_str2int(instruction)
         elif opcode == "CONCAT":
-            execute_concat()
+            execute_concat(instruction)
         elif opcode == "GETCHAR":
-            execute_getchar()
+            execute_getchar(instruction)
         elif opcode == "SETCHAR":
-            execute_setchar()
+            execute_setchar(instruction)
         elif opcode == "CREATEFRAME":
-            execute_createframe()
+            execute_createframe(instruction)
         elif opcode == "PUSHFRAME":
-            execute_pushframe()
+            execute_pushframe(instruction)
         elif opcode == "POPFRAME":
-            execute_popframe()
+            execute_popframe(instruction)
         elif opcode == "RETURN":
-            execute_return()
+            execute_return(instruction)
         elif opcode == "BREAK":
-            execute_break()
+            execute_break(instruction)
         elif opcode == "CALL":
-            execute_call()
+            execute_call(instruction)
         elif opcode == "LABEL":
             continue
         elif opcode == "JUMP":
-            execute_jump()
+            execute_jump(instruction)
         elif opcode == "PUSHS":
-            execute_pushs()
+            execute_pushs(instruction)
         elif opcode == "WRITE":
-            execute_write()
+            execute_write(instruction)
         elif opcode == "EXIT":
-            execute_exit()
+            execute_exit(instruction)
         elif opcode == "DPRINT":
-            execute_dprint()
+            execute_dprint(instruction)
         elif opcode == "JUMPIFEQ":
-            execute_jumpifeq()
+            execute_jumpifeq(instruction)
         elif opcode == "JUMPIFNEQ":
-            execute_jumpifneq()
+            execute_jumpifneq(instruction)
 
 
 if __name__ == '__main__':
