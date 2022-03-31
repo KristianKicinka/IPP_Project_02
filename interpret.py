@@ -3,6 +3,13 @@ import argparse
 import sys
 import xml.etree.ElementTree as ET
 
+DEFINED_INSTRUCTIONS = {"DEFVAR": 1, "POPS": 1, "MOVE": 2, "INT2CHAR": 2, "STRLEN": 2, "TYPE": 2, "NOT": 2, "READ": 2,
+                        "ADD": 3, "SUB": 3, "MUL": 3, "IDIV": 3, "LT": 3, "GT": 3, "EQ": 3, "AND": 3, "OR": 3,
+                        "STRI2INT": 3, "CONCAT": 3, "GETCHAR": 3, "SETCHAR": 3, "CREATEFRAME": 0, "PUSHFRAME": 0,
+                        "POPFRAME": 0, "RETURN": 0, "BREAK": 0, "CALL": 1, "LABEL": 1, "JUMP": 1, "PUSHS": 1,
+                        "WRITE": 1, "EXIT": 1, "DPRINT": 1, "JUMPIFEQ": 3, "JUMPIFNEQ": 3
+                        }
+
 NO_ERROR = 0
 PARAMETER_ERROR = 10
 INPUT_FILE_READ_ERROR = 11
@@ -36,6 +43,10 @@ class Instruction:
 
     def add_argument(self, argument):
         self.arguments.append(argument)
+
+    def get_arguments(self):
+        return self.arguments
+
 
 
 class Argument:
@@ -144,14 +155,21 @@ def check_xml_file(tmp_tree):
 
 def load_instructions(tmp_tree):
     tmp_instructions = list()
-
+    defined_instructions = DEFINED_INSTRUCTIONS.keys()
     root = tmp_tree.getroot()
 
     for child_element in root:
+        if not(child_element.attrib.get("opcode").upper() in defined_instructions):
+            close_script(XML_STRUCTURE_ERROR)
+
         instruction = Instruction(child_element.attrib.get("opcode").upper(), int(child_element.attrib.get("order")))
+
         for sub_child in child_element:
             argument = Argument(sub_child.attrib.get("type"), sub_child.text)
             instruction.add_argument(argument)
+        if len(instruction.get_arguments()) != DEFINED_INSTRUCTIONS.get(instruction.get_opcode()):
+            close_script(XML_STRUCTURE_ERROR)
+
         tmp_instructions.append(instruction)
 
     return tmp_instructions
