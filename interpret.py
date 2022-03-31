@@ -53,7 +53,7 @@ class Interpreter:
     def __init__(self):
         self.data_stack = list()
         self.call_stack = list()
-        self.frame_stack = list()
+        self.frame_stack = dict()
         self.labels = dict()
 
     def add_to_data_stack(self, data):
@@ -62,8 +62,8 @@ class Interpreter:
     def add_to_call_stack(self, data):
         self.call_stack.append(data)
 
-    def add_to_frame_stack(self, data):
-        self.frame_stack.append(data)
+    def add_to_frame_stack(self, key, data):
+        self.frame_stack[key] = data
 
     def add_to_labels(self, key, data):
         self.labels[key] = data
@@ -443,7 +443,6 @@ if __name__ == '__main__':
     instructions.sort(key=lambda inst: inst.order)
     interpreter = Interpreter()
     find_labels()
-    print(interpreter.get_labels())
     interpret_instructions()
 
 
