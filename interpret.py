@@ -207,8 +207,230 @@ def load_instructions(tmp_tree):
     return tmp_instructions
 
 
-def interpret_instructions(tmp_interpreter):
-    print("interpret")
+def find_labels():
+
+    for instruction in instructions:
+        if instruction.get_opcode() == "LABEL":
+            label = instruction.get_arguments()[0]
+            if label in interpreter.get_labels().keys():
+                close_script(SEMANTIC_ERROR)
+            index = instructions.index(instruction)
+            interpreter.add_to_labels(label, index)
+
+
+# Execute functions
+
+
+def execute_defvar():
+    print("defvar")
+
+
+def execute_pops():
+    print("pops")
+
+
+def execute_move():
+    print("move")
+
+
+def execute_int2char():
+    print("int2char")
+
+
+def execute_strlen():
+    print("strlen")
+
+
+def execute_type():
+    print("type")
+
+
+def execute_not():
+    print("not")
+
+
+def execute_read():
+    print("read")
+
+
+def execute_add():
+    print("add")
+
+
+def execute_sub():
+    print("sub")
+
+
+def execute_mul():
+    print("mul")
+
+
+def execute_idiv():
+    print("idiv")
+
+
+def execute_lt():
+    print("lt")
+
+
+def execute_gt():
+    print("gt")
+
+
+def execute_eq():
+    print("eq")
+
+
+def execute_and():
+    print("and")
+
+
+def execute_or():
+    print("or")
+
+
+def execute_str2int():
+    print("str2int")
+
+
+def execute_concat():
+    print("concat")
+
+
+def execute_getchar():
+    print("getchar")
+
+
+def execute_setchar():
+    print("setchar")
+
+
+def execute_createframe():
+    print("createframe")
+
+
+def execute_pushframe():
+    print("pushframe")
+
+
+def execute_popframe():
+    print("popframe")
+
+
+def execute_return():
+    print("return")
+
+
+def execute_break():
+    print("break")
+
+
+def execute_call():
+    print("call")
+
+
+def execute_jump():
+    print("jump")
+
+
+def execute_pushs():
+    print("pushs")
+
+
+def execute_write():
+    print("write")
+
+
+def execute_exit():
+    print("exit")
+
+
+def execute_dprint():
+    print("dprint")
+
+
+def execute_jumpifeq():
+    print("jumpifeq")
+
+
+def execute_jumpifneq():
+    print("jumpifneq")
+
+
+def interpret_instructions():
+
+    for instruction in instructions:
+        opcode = instruction.get_opcode()
+        if opcode == "DEFVAR":
+            execute_defvar()
+        elif opcode == "POPS":
+            execute_pops()
+        elif opcode == "MOVE":
+            execute_move()
+        elif opcode == "INT2CHAR":
+            execute_int2char()
+        elif opcode == "STRLEN":
+            execute_strlen()
+        elif opcode == "TYPE":
+            execute_type()
+        elif opcode == "NOT":
+            execute_not()
+        elif opcode == "READ":
+            execute_read()
+        elif opcode == "ADD":
+            execute_add()
+        elif opcode == "SUB":
+            execute_sub()
+        elif opcode == "MUL":
+            execute_mul()
+        elif opcode == "IDIV":
+            execute_idiv()
+        elif opcode == "LT":
+            execute_lt()
+        elif opcode == "GT":
+            execute_gt()
+        elif opcode == "EQ":
+            execute_eq()
+        elif opcode == "AND":
+            execute_and()
+        elif opcode == "OR":
+            execute_or()
+        elif opcode == "STR2INT":
+            execute_str2int()
+        elif opcode == "CONCAT":
+            execute_concat()
+        elif opcode == "GETCHAR":
+            execute_getchar()
+        elif opcode == "SETCHAR":
+            execute_setchar()
+        elif opcode == "CREATEFRAME":
+            execute_createframe()
+        elif opcode == "PUSHFRAME":
+            execute_pushframe()
+        elif opcode == "POPFRAME":
+            execute_popframe()
+        elif opcode == "RETURN":
+            execute_return()
+        elif opcode == "BREAK":
+            execute_break()
+        elif opcode == "CALL":
+            execute_call()
+        elif opcode == "LABEL":
+            continue
+        elif opcode == "JUMP":
+            execute_jump()
+        elif opcode == "PUSHS":
+            execute_pushs()
+        elif opcode == "WRITE":
+            execute_write()
+        elif opcode == "EXIT":
+            execute_exit()
+        elif opcode == "DPRINT":
+            execute_dprint()
+        elif opcode == "JUMPIFEQ":
+            execute_jumpifeq()
+        elif opcode == "JUMPIFNEQ":
+            execute_jumpifneq()
 
 
 if __name__ == '__main__':
@@ -219,14 +441,9 @@ if __name__ == '__main__':
     input_file = load_input_file(input_path)
     instructions = load_instructions(tree)
     instructions.sort(key=lambda inst: inst.order)
-
     interpreter = Interpreter()
+    find_labels()
+    print(interpreter.get_labels())
+    interpret_instructions()
 
-    for line in input_file:
-        print(line.rstrip('\n'))
 
-    print(input_path)
-    print(source_path)
-
-    for instruction in instructions:
-        print(f"Instruction : {instruction.get_opcode()} order : {instruction.get_order()}")
