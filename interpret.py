@@ -91,7 +91,7 @@ class Argument:
         return self.arg_type
 
     def get_value(self):
-        return self.arg_type
+        return self.value
 
 # Implementation
 
@@ -223,15 +223,29 @@ def find_labels():
 
 def execute_defvar(instruction):
     print("defvar")
-
+    var = instruction.get_arguments()[0].get_value()
+    if var in interpreter.get_frame_stack().keys():
+        close_script(SEMANTIC_ERROR)
+    interpreter.add_to_frame_stack(var, None)
 
 
 def execute_pops(instruction):
     print("pops")
+    if len(interpreter.get_data_stack()) == 0:
+        close_script(MISSING_VALUE_ERROR)
+    var = instruction.get_arguments()[0]
+    if not(var in interpreter.get_frame_stack().keys()):
+        close_script(SEMANTIC_ERROR)
+
 
 
 def execute_move(instruction):
     print("move")
+    var = instruction.get_arguments()[0].get_value()
+    if not(var in interpreter.get_frame_stack().keys()):
+        close_script(SEMANTIC_ERROR)
+    symbol_value = instruction.get_arguments()[1].get_type()
+    interpreter.get_frame_stack().update(var=symbol_value)
 
 
 def execute_int2char(instruction):
@@ -336,6 +350,8 @@ def execute_jump(instruction):
 
 def execute_pushs(instruction):
     print("pushs")
+    value = instruction.get_arguments()[0].get_value()
+    interpreter.add_to_data_stack(value)
 
 
 def execute_write(instruction):
