@@ -233,10 +233,11 @@ def execute_pops(instruction):
     print("pops")
     if len(interpreter.get_data_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
-    var = instruction.get_arguments()[0]
+    var = instruction.get_arguments()[0].get_value()
     if not(var in interpreter.get_frame_stack().keys()):
         close_script(SEMANTIC_ERROR)
-
+    value = interpreter.get_data_stack().pop()
+    interpreter.get_frame_stack().update(var=value)
 
 
 def execute_move(instruction):
