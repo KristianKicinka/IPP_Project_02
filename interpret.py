@@ -91,17 +91,17 @@ def process_arguments():
 
     load_args = vars(arg_parse.parse_args())
 
-    source_path = None
-    input_path = None
+    tmp_source_path = None
+    tmp_input_path = None
 
     if load_args.get("input") is None and load_args.get("source") is None:
         close_script(PARAMETER_ERROR)
     elif load_args.get("source") is None:
-        input_path = load_args.get("input")[0]
+        tmp_input_path = load_args.get("input")[0]
     elif load_args.get("input") is None:
-        source_path = load_args.get("source")[0]
+        tmp_source_path = load_args.get("source")[0]
 
-    return input_path, source_path
+    return tmp_input_path, tmp_source_path
 
 
 def load_xml_file(src_file):
@@ -109,9 +109,17 @@ def load_xml_file(src_file):
     if src_file is None:
         tmp_tree = ET.parse(sys.stdin)
     else:
-        tmp_tree = ET.parse(source_file)
+        tmp_tree = ET.parse(src_file)
 
     return tmp_tree
+
+
+def load_input_file(inp_file):
+    if inp_file is None:
+        tmp_file = sys.stdin
+    else:
+        tmp_file = open(inp_file)
+    return tmp_file
 
 
 def check_xml_file(tmp_tree):
@@ -135,12 +143,12 @@ def check_xml_file(tmp_tree):
 
 
 def load_instructions(tmp_tree):
-    tmp_instructions = []
+    tmp_instructions = list()
 
     root = tmp_tree.getroot()
 
     for child_element in root:
-        instruction = Instruction(child_element.attrib.get("opcode"), child_element.attrib.get("order"))
+        instruction = Instruction(child_element.attrib.get("opcode").upper(), int(child_element.attrib.get("order")))
         for sub_child in child_element:
             argument = Argument(sub_child.attrib.get("type"), sub_child.text)
             instruction.add_argument(argument)
@@ -151,11 +159,18 @@ def load_instructions(tmp_tree):
 
 if __name__ == '__main__':
 
-    input_file, source_file = process_arguments()
-    tree = load_xml_file(source_file)
+    input_path, source_path = process_arguments()
+    tree = load_xml_file(source_path)
     check_xml_file(tree)
+    input_file = load_input_file(input_path)
     instructions = load_instructions(tree)
+    instructions.sort(key=lambda inst: inst.order)
 
-    print(input_file)
-    print(source_file)
-    print(instructions)
+    for line in input_file:
+        print(line)
+
+    print(input_path)
+    print(source_path)
+
+    for instruction in instructions:
+        print(f"Instruction : {instruction.get_opcode()} order : {instruction.get_order()}")
