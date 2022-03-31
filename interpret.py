@@ -207,6 +207,10 @@ def load_instructions(tmp_tree):
     return tmp_instructions
 
 
+def interpret_instructions(tmp_interpreter):
+    print("interpret")
+
+
 if __name__ == '__main__':
 
     input_path, source_path = process_arguments()
@@ -216,8 +220,10 @@ if __name__ == '__main__':
     instructions = load_instructions(tree)
     instructions.sort(key=lambda inst: inst.order)
 
+    interpreter = Interpreter()
+
     for line in input_file:
-        print(line)
+        print(line.rstrip('\n'))
 
     print(input_path)
     print(source_path)
