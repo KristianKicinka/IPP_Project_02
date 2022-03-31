@@ -48,6 +48,38 @@ class Instruction:
         return self.arguments
 
 
+class Interpreter:
+
+    def __init__(self):
+        self.data_stack = list()
+        self.call_stack = list()
+        self.frame_stack = list()
+        self.labels = dict()
+
+    def add_to_data_stack(self, data):
+        self.data_stack.append(data)
+
+    def add_to_call_stack(self, data):
+        self.call_stack.append(data)
+
+    def add_to_frame_stack(self, data):
+        self.frame_stack.append(data)
+
+    def add_to_labels(self, key, data):
+        self.labels[key] = data
+
+    def get_data_stack(self):
+        return self.data_stack
+
+    def get_call_stack(self):
+        return self.call_stack
+
+    def get_frame_stack(self):
+        return self.frame_stack
+
+    def get_labels(self):
+        return self.labels
+
 
 class Argument:
 
