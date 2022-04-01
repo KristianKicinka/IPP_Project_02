@@ -301,8 +301,12 @@ def process_aritmetic_operation(instruction, operation):
 
 def process_relation_operands(instruction, operation):
     var = check_variable(instruction)
-    symbol_1_type = instruction.get_arguments()[1].get_arg_type()
-    symbol_2_type = instruction.get_arguments()[2].get_arg_type()
+    symbol_1: Argument = instruction.get_arguments()[1]
+    symbol_2: Argument = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
     if not((symbol_1_type == "int" or symbol_1_type == "string" or symbol_1_type == "bool")
            and symbol_1_type == symbol_2_type) and operation != "eq":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
@@ -313,8 +317,8 @@ def process_relation_operands(instruction, operation):
             ):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
-    symbol_1_value = instruction.get_arguments()[1].get_value()
-    symbol_2_value = instruction.get_arguments()[2].get_value()
+    symbol_1_value = return_symbol_data(symbol_1, "value")
+    symbol_2_value = return_symbol_data(symbol_2, "value")
 
     res = None
 
