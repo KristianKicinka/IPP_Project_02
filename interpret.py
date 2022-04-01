@@ -243,6 +243,46 @@ def process_aritmetic_operation(instruction, operation):
     interpreter.get_frame_stack().update(var=res)
 
 
+def process_relation_operands(instruction, operation):
+    var = instruction.get_arguments()[0].get_value()
+    if not (var in interpreter.get_frame_stack().keys()):
+        close_script(SEMANTIC_ERROR)
+    symbol_1_type = instruction.get_arguments()[1].get_type()
+    symbol_2_type = instruction.get_arguments()[2].get_type()
+    if not((symbol_1_type == "int" or symbol_1_type == "string" or symbol_1_type == "bool")
+           and symbol_1_type == symbol_2_type) and operation != "eq":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+    if operation == "eq" and not(
+            (symbol_1_type == "nil" and (symbol_2_type == "int" or symbol_2_type == "bool" or symbol_2_type == "string"))
+            or
+            ((symbol_1_type == "int" or symbol_1_type == "bool" or symbol_1_type == "string") and symbol_2_type == "nil")
+            ):
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
+    symbol_1_value = instruction.get_arguments()[1].get_value()
+    symbol_2_value = instruction.get_arguments()[2].get_value()
+
+    res = None
+
+    if operation == "lt":
+        if symbol_1_value < symbol_2_value:
+            res = True
+        else:
+            res = False
+    elif operation == "gt":
+        if symbol_1_value > symbol_2_value:
+            res = True
+        else:
+            res = False
+    elif operation == "eq":
+        if symbol_1_value == symbol_2_value:
+            res = True
+        else:
+            res = False
+
+    interpreter.get_frame_stack().update(var=res)
+
+
 # Execute functions
 
 
@@ -316,14 +356,17 @@ def execute_idiv(instruction):
 
 def execute_lt(instruction):
     print("lt")
+    process_relation_operands(instruction, "lt")
 
 
 def execute_gt(instruction):
     print("gt")
+    process_relation_operands(instruction, "gt")
 
 
 def execute_eq(instruction):
     print("eq")
+    process_relation_operands(instruction, "eq")
 
 
 def execute_and(instruction):
