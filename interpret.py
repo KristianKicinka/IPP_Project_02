@@ -347,6 +347,26 @@ def process_relation_operands(instruction, operation):
     interpreter.get_frame_stack().update(var=var_obj)
 
 
+def process_logic_operators(instruction, operation):
+    var = check_variable(instruction)
+    symbol_1: Argument = instruction.get_arguments()[1]
+    symbol_2: Argument = instruction.get_arguments()[2]
+
+    symbol_1_val = return_symbol_data(symbol_1, "value")
+    symbol_2_val = return_symbol_data(symbol_2, "value")
+
+    res = None
+    if operation == "and":
+        res = bool(symbol_1_val) and bool(symbol_2_val)
+    elif operation == "or":
+        res = bool(symbol_1_val) or bool(symbol_2_val)
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("bool")
+    interpreter.get_frame_stack().update(var=var_obj)
+
+
 # Execute functions
 
 
@@ -485,10 +505,12 @@ def execute_eq(instruction):
 
 def execute_and(instruction):
     print("and")
+    process_logic_operators(instruction, "and")
 
 
 def execute_or(instruction):
     print("or")
+    process_logic_operators(instruction, "or")
 
 
 def execute_str2int(instruction):
