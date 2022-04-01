@@ -296,7 +296,10 @@ def process_aritmetic_operation(instruction, operation):
             close_script(WRONG_OPERAND_VALUE_ERROR)
         res = int(symbol_1_value) // int(symbol_2_value)
 
-    interpreter.get_frame_stack().update(var=res)
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("int")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def process_relation_operands(instruction, operation):
@@ -338,7 +341,10 @@ def process_relation_operands(instruction, operation):
         else:
             res = False
 
-    interpreter.get_frame_stack().update(var=res)
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("bool")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 # Execute functions
@@ -359,14 +365,18 @@ def execute_pops(instruction):
         close_script(MISSING_VALUE_ERROR)
     var = check_variable(instruction)
     value = interpreter.get_data_stack().pop()
-    interpreter.get_frame_stack().update(var=value)
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(value)
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_move(instruction):
     print("move")
     var = check_variable(instruction)
-    symbol_value = instruction.get_arguments()[1].get_value()
-    symbol_type = instruction.get_arguments()[1].get_arg_type()
+    symbol: Argument = instruction.get_arguments()[1]
+    symbol_value = return_symbol_data(symbol, "value")
+    symbol_type = return_symbol_data(symbol, "type")
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(symbol_value)
     var_obj.set_type(symbol_type)
@@ -380,9 +390,14 @@ def execute_int2char(instruction):
 def execute_strlen(instruction):
     print("strlen")
     var = check_variable(instruction)
-    symbol_string = instruction.get_arguments()[0].get_value()
+    symbol: Argument = instruction.get_arguments()[0]
+    # TODO maybe check if var is type of string
+    symbol_string = return_symbol_data(symbol, "value")
     string_len = len(symbol_string)
-    interpreter.get_frame_stack().update(var=string_len)
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(string_len)
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_type(instruction):
