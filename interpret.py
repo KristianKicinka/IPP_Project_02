@@ -225,10 +225,20 @@ def check_variable(instruction):
     return tmp_var
 
 
+def return_symbol_value(symbol: Argument):
+    value = None
+    if symbol.get_arg_type() == "var":
+        name = symbol.get_value()
+        value = interpreter.get_frame_stack().get(name)
+    else:
+        value = symbol.get_value()
+    return value
+
+
 def process_aritmetic_operation(instruction, operation):
     var = check_variable(instruction)
-    symbol_1_type = instruction.get_arguments()[1].get_type()
-    symbol_2_type = instruction.get_arguments()[2].get_type()
+    symbol_1_type = instruction.get_arguments()[1].get_arg_type()
+    symbol_2_type = instruction.get_arguments()[2].get_arg_type()
     if not (symbol_1_type != "int" and symbol_2_type != "int"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
     symbol_1_value = instruction.get_arguments()[1].get_value()
@@ -250,8 +260,8 @@ def process_aritmetic_operation(instruction, operation):
 
 def process_relation_operands(instruction, operation):
     var = check_variable(instruction)
-    symbol_1_type = instruction.get_arguments()[1].get_type()
-    symbol_2_type = instruction.get_arguments()[2].get_type()
+    symbol_1_type = instruction.get_arguments()[1].get_arg_type()
+    symbol_2_type = instruction.get_arguments()[2].get_arg_type()
     if not((symbol_1_type == "int" or symbol_1_type == "string" or symbol_1_type == "bool")
            and symbol_1_type == symbol_2_type) and operation != "eq":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
@@ -309,7 +319,7 @@ def execute_pops(instruction):
 def execute_move(instruction):
     print("move")
     var = check_variable(instruction)
-    symbol_value = instruction.get_arguments()[1].get_type()
+    symbol_value = instruction.get_arguments()[1].get_value()
     interpreter.get_frame_stack().update(var=symbol_value)
 
 
@@ -319,10 +329,17 @@ def execute_int2char(instruction):
 
 def execute_strlen(instruction):
     print("strlen")
+    var = check_variable(instruction)
+    symbol_string = instruction.get_arguments()[0].get_value()
+    string_len = len(symbol_string)
+    interpreter.get_frame_stack().update(var=string_len)
 
 
 def execute_type(instruction):
     print("type")
+    var = check_variable(instruction)
+    symbol_type = instruction.get_arguments()[0].get_arg_type()
+    interpreter.get_frame_stack().update(var=symbol_type)
 
 
 def execute_not(instruction):
