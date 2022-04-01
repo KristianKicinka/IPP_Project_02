@@ -515,6 +515,19 @@ def execute_or(instruction):
 
 def execute_str2int(instruction):
     print("str2int")
+    # TODO maybe check if symbol is string
+    var = check_variable(instruction)
+    symbol: Argument = instruction.get_arguments()[1]
+    symbol_val = return_symbol_data(symbol, "value")
+
+    if len(symbol_val) > 1 or int(symbol_val) < 0 or int(symbol_val) > 65535:
+        close_script(STRING_WORKING_ERROR)
+    res = ord(symbol_val)
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("int")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_concat(instruction):
