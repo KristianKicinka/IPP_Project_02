@@ -374,9 +374,12 @@ def execute_pops(instruction):
 def execute_move(instruction):
     print("move")
     var = check_variable(instruction)
+
     symbol: Argument = instruction.get_arguments()[1]
+
     symbol_value = return_symbol_data(symbol, "value")
     symbol_type = return_symbol_data(symbol, "type")
+
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(symbol_value)
     var_obj.set_type(symbol_type)
@@ -403,8 +406,16 @@ def execute_strlen(instruction):
 def execute_type(instruction):
     print("type")
     var = check_variable(instruction)
-    symbol_type = instruction.get_arguments()[0].get_arg_type()
-    interpreter.get_frame_stack().update(var=symbol_type)
+    symbol: Argument = instruction.get_arguments()[0]
+    symbol_type = return_symbol_data(symbol, "type")
+
+    if symbol_type is None:
+        symbol_type = ""
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(symbol_type)
+    var_obj.set_type("string")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_not(instruction):
