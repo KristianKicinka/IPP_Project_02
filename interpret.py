@@ -251,14 +251,23 @@ def check_variable(instruction):
     return tmp_var
 
 
-def return_symbol_value(symbol: Argument):
-    value = None
+def return_symbol_data(symbol: Argument, data_type):
+    data = None
     if symbol.get_arg_type() == "var":
         name = symbol.get_value()
-        value = interpreter.get_frame_stack().get(name)
+        if not(name in interpreter.get_frame_stack().keys()):
+            close_script(SEMANTIC_ERROR)
+        var_obj: Variable = interpreter.get_frame_stack().get(name)
+        if data_type == "value":
+            data = var_obj.get_value()
+        elif data_type == "type":
+            data = var_obj.get_type()
     else:
-        value = symbol.get_value()
-    return value
+        if data_type == "value":
+            data = symbol.get_value()
+        elif data_type == "type":
+            data = symbol.get_arg_type()
+    return data
 
 
 def process_aritmetic_operation(instruction, operation):
@@ -330,7 +339,8 @@ def execute_defvar(instruction):
     var = instruction.get_arguments()[0].get_value()
     if var in interpreter.get_frame_stack().keys():
         close_script(SEMANTIC_ERROR)
-    interpreter.add_to_frame_stack(var, None)
+    var_obj = Variable(var)
+    interpreter.add_to_frame_stack(var, var_obj)
 
 
 def execute_pops(instruction):
@@ -346,7 +356,11 @@ def execute_move(instruction):
     print("move")
     var = check_variable(instruction)
     symbol_value = instruction.get_arguments()[1].get_value()
-    interpreter.get_frame_stack().update(var=symbol_value)
+    symbol_type = instruction.get_arguments()[1].get_arg_type()
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(symbol_value)
+    var_obj.set_type(symbol_type)
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_int2char(instruction):
