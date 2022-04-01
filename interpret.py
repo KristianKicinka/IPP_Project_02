@@ -218,10 +218,15 @@ def find_labels():
             interpreter.add_to_labels(label, index)
 
 
-def process_aritmetic_operation(instruction, operation):
-    var = instruction.get_arguments()[0].get_value()
-    if not (var in interpreter.get_frame_stack().keys()):
+def check_variable(instruction):
+    tmp_var = instruction.get_arguments()[0].get_value()
+    if not (tmp_var in interpreter.get_frame_stack().keys()):
         close_script(SEMANTIC_ERROR)
+    return tmp_var
+
+
+def process_aritmetic_operation(instruction, operation):
+    var = check_variable(instruction)
     symbol_1_type = instruction.get_arguments()[1].get_type()
     symbol_2_type = instruction.get_arguments()[2].get_type()
     if not (symbol_1_type != "int" and symbol_2_type != "int"):
@@ -244,9 +249,7 @@ def process_aritmetic_operation(instruction, operation):
 
 
 def process_relation_operands(instruction, operation):
-    var = instruction.get_arguments()[0].get_value()
-    if not (var in interpreter.get_frame_stack().keys()):
-        close_script(SEMANTIC_ERROR)
+    var = check_variable(instruction)
     symbol_1_type = instruction.get_arguments()[1].get_type()
     symbol_2_type = instruction.get_arguments()[2].get_type()
     if not((symbol_1_type == "int" or symbol_1_type == "string" or symbol_1_type == "bool")
@@ -298,18 +301,14 @@ def execute_pops(instruction):
     print("pops")
     if len(interpreter.get_data_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
-    var = instruction.get_arguments()[0].get_value()
-    if not(var in interpreter.get_frame_stack().keys()):
-        close_script(SEMANTIC_ERROR)
+    var = check_variable(instruction)
     value = interpreter.get_data_stack().pop()
     interpreter.get_frame_stack().update(var=value)
 
 
 def execute_move(instruction):
     print("move")
-    var = instruction.get_arguments()[0].get_value()
-    if not(var in interpreter.get_frame_stack().keys()):
-        close_script(SEMANTIC_ERROR)
+    var = check_variable(instruction)
     symbol_value = instruction.get_arguments()[1].get_type()
     interpreter.get_frame_stack().update(var=symbol_value)
 
