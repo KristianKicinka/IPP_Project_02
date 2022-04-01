@@ -390,7 +390,7 @@ def execute_int2char(instruction):
     # TODO Maybe check if symbol type is int
     print("int2char")
     var = check_variable(instruction)
-    symbol: Argument = instruction.get_arguments()[0]
+    symbol: Argument = instruction.get_arguments()[1]
     symbol_val = return_symbol_data(symbol, "value")
     if int(symbol_val) < 0 or int(symbol_val) > 1114111:
         close_script(STRING_WORKING_ERROR)
@@ -405,7 +405,7 @@ def execute_int2char(instruction):
 def execute_strlen(instruction):
     print("strlen")
     var = check_variable(instruction)
-    symbol: Argument = instruction.get_arguments()[0]
+    symbol: Argument = instruction.get_arguments()[1]
     # TODO maybe check if var is type of string
     symbol_string = return_symbol_data(symbol, "value")
     string_len = len(symbol_string)
@@ -418,7 +418,7 @@ def execute_strlen(instruction):
 def execute_type(instruction):
     print("type")
     var = check_variable(instruction)
-    symbol: Argument = instruction.get_arguments()[0]
+    symbol: Argument = instruction.get_arguments()[1]
     symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type is None:
@@ -432,6 +432,16 @@ def execute_type(instruction):
 
 def execute_not(instruction):
     print("not")
+    var = check_variable(instruction)
+    symbol: Argument = instruction.get_arguments()[1]
+    # TODO check if type of symbol is bool
+    symbol_value = return_symbol_data(symbol, "value")
+    res = not(bool(symbol_value))
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("bool")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_read(instruction):
