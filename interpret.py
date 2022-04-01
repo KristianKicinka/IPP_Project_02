@@ -387,7 +387,19 @@ def execute_move(instruction):
 
 
 def execute_int2char(instruction):
+    # TODO Maybe check if symbol type is int
     print("int2char")
+    var = check_variable(instruction)
+    symbol: Argument = instruction.get_arguments()[0]
+    symbol_val = return_symbol_data(symbol, "value")
+    if int(symbol_val) < 0 or int(symbol_val) > 1114111:
+        close_script(STRING_WORKING_ERROR)
+    new_val = chr(int(symbol_val))
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(new_val)
+    var_obj.set_type("string")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_strlen(instruction):
