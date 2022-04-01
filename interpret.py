@@ -466,6 +466,7 @@ def execute_not(instruction):
 
 def execute_read(instruction):
     print("read")
+    # TODO do read function
 
 
 def execute_add(instruction):
@@ -532,6 +533,25 @@ def execute_str2int(instruction):
 
 def execute_concat(instruction):
     print("concat")
+    var = check_variable(instruction)
+    symbol_1: Argument = instruction.get_arguments()[1]
+    symbol_2: Argument = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
+    if symbol_1_type != "string" or symbol_2_type != "string":
+        close_script(SEMANTIC_ERROR)
+
+    symbol_1_val = return_symbol_data(symbol_1, "value")
+    symbol_2_val = return_symbol_data(symbol_2, "value")
+
+    res = symbol_1_val + symbol_2_val
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("string")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_getchar(instruction):
