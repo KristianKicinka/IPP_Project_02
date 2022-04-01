@@ -272,12 +272,18 @@ def return_symbol_data(symbol: Argument, data_type):
 
 def process_aritmetic_operation(instruction, operation):
     var = check_variable(instruction)
-    symbol_1_type = instruction.get_arguments()[1].get_arg_type()
-    symbol_2_type = instruction.get_arguments()[2].get_arg_type()
+    symbol_1: Argument = instruction.get_arguments()[1]
+    symbol_2: Argument = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
     if not (symbol_1_type != "int" and symbol_2_type != "int"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-    symbol_1_value = instruction.get_arguments()[1].get_value()
-    symbol_2_value = instruction.get_arguments()[2].get_value()
+
+    symbol_1_value = return_symbol_data(symbol_1, "value")
+    symbol_2_value = return_symbol_data(symbol_2, "value")
+
     res = None
     if operation == "add":
         res = int(symbol_1_value) + int(symbol_2_value)
