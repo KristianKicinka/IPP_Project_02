@@ -218,6 +218,31 @@ def find_labels():
             interpreter.add_to_labels(label, index)
 
 
+def process_aritmetic_operation(instruction, operation):
+    var = instruction.get_arguments()[0].get_value()
+    if not (var in interpreter.get_frame_stack().keys()):
+        close_script(SEMANTIC_ERROR)
+    symbol_1_type = instruction.get_arguments()[1].get_type()
+    symbol_2_type = instruction.get_arguments()[2].get_type()
+    if not (symbol_1_type != "int" and symbol_2_type != "int"):
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+    symbol_1_value = instruction.get_arguments()[1].get_value()
+    symbol_2_value = instruction.get_arguments()[2].get_value()
+    res = None
+    if operation == "add":
+        res = int(symbol_1_value) + int(symbol_2_value)
+    elif operation == "sub":
+        res = int(symbol_1_value) - int(symbol_2_value)
+    elif operation == "mul":
+        res = int(symbol_1_value) * int(symbol_2_value)
+    elif operation == "idiv":
+        if int(symbol_2_value) == 0:
+            close_script(WRONG_OPERAND_VALUE_ERROR)
+        res = int(symbol_1_value) // int(symbol_2_value)
+
+    interpreter.get_frame_stack().update(var=res)
+
+
 # Execute functions
 
 
@@ -271,18 +296,22 @@ def execute_read(instruction):
 
 def execute_add(instruction):
     print("add")
+    process_aritmetic_operation(instruction, "add")
 
 
 def execute_sub(instruction):
     print("sub")
+    process_aritmetic_operation(instruction, "sub")
 
 
 def execute_mul(instruction):
     print("mul")
+    process_aritmetic_operation(instruction, "mul")
 
 
 def execute_idiv(instruction):
     print("idiv")
+    process_aritmetic_operation(instruction, "idiv")
 
 
 def execute_lt(instruction):
