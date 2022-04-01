@@ -556,6 +556,23 @@ def execute_concat(instruction):
 
 def execute_getchar(instruction):
     print("getchar")
+    # TODO maybe check types of symbols 1(str) 2(int)
+    var = check_variable(instruction)
+    symbol_1 = instruction.get_arguments()[1]
+    symbol_2 = instruction.get_arguments()[2]
+
+    string = return_symbol_data(symbol_1, "value")
+    index = return_symbol_data(symbol_2, "value")
+
+    if index < 0 or index > len(string):
+        close_script(STRING_WORKING_ERROR)
+
+    res = string[index]
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_obj.set_value(res)
+    var_obj.set_type("string")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_setchar(instruction):
