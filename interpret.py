@@ -576,7 +576,26 @@ def execute_getchar(instruction):
 
 
 def execute_setchar(instruction):
+    # TODO maybe check types
     print("setchar")
+    var = check_variable(instruction)
+    symbol_1: Argument = instruction.get_arguments()[1]
+    symbol_2: Argument = instruction.get_arguments()[2]
+
+    index = return_symbol_data(symbol_1, "value")
+    string = return_symbol_data(symbol_2, "value")
+
+    var_obj: Variable = interpreter.get_frame_stack().get(var)
+    var_str = var_obj.get_value()
+
+    if index < 0 or index > len(var_str) or len(string) == 0:
+        close_script(STRING_WORKING_ERROR)
+
+    res = var_str[index] = string[0]
+
+    var_obj.set_value(res)
+    var_obj.set_type("string")
+    interpreter.get_frame_stack().update(var=var_obj)
 
 
 def execute_createframe(instruction):
