@@ -37,4 +37,6 @@
     <instruction order="40" opcode="WRITE">
         <arg1 type="var">GF@val</arg1>
     </instruction>
+    <instruction order="40" opcode="BREAK">
+    </instruction>
 </program>

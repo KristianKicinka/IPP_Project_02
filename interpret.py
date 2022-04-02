@@ -115,10 +115,10 @@ class Variable:
         self.value = None
 
     def get_name(self):
-        return self.get_name()
+        return self.name
 
     def get_type(self):
-        return self.get_type()
+        return self.type
 
     def get_value(self):
         return self.value
@@ -313,7 +313,7 @@ def process_aritmetic_operation(instruction, operation):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("int")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def process_relation_operands(instruction, operation):
@@ -358,7 +358,7 @@ def process_relation_operands(instruction, operation):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("bool")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def process_logic_operators(instruction, operation):
@@ -378,7 +378,7 @@ def process_logic_operators(instruction, operation):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("bool")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 # Execute functions
@@ -402,7 +402,7 @@ def execute_pops(instruction):
 
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(value)
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_move(instruction):
@@ -417,7 +417,7 @@ def execute_move(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(symbol_value)
     var_obj.set_type(symbol_type)
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_int2char(instruction):
@@ -433,7 +433,7 @@ def execute_int2char(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(new_val)
     var_obj.set_type("string")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_strlen(instruction):
@@ -446,7 +446,7 @@ def execute_strlen(instruction):
 
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(string_len)
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_type(instruction):
@@ -461,7 +461,7 @@ def execute_type(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(symbol_type)
     var_obj.set_type("string")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_not(instruction):
@@ -475,7 +475,7 @@ def execute_not(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("bool")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_read(instruction):
@@ -542,7 +542,7 @@ def execute_str2int(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("int")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_concat(instruction):
@@ -565,7 +565,7 @@ def execute_concat(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("string")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_getchar(instruction):
@@ -586,7 +586,7 @@ def execute_getchar(instruction):
     var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("string")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_setchar(instruction):
@@ -609,7 +609,7 @@ def execute_setchar(instruction):
 
     var_obj.set_value(res)
     var_obj.set_type("string")
-    interpreter.get_frame_stack().update(var=var_obj)
+    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_createframe(instruction):
@@ -630,6 +630,14 @@ def execute_return(instruction):
 
 def execute_break(instruction):
     print("break")
+    current_inst_id = interpreter.get_current_instruction_id()
+    processed_instructions_count = current_inst_id - 1
+    print(f"ID Spracovávanej inštrukcie : {current_inst_id}", file=sys.stderr)
+    print(f"Počet spracovaných inštrukcií : {processed_instructions_count}", file=sys.stderr)
+    print(f"Obsah rámcov : ", file=sys.stderr)
+    for key in interpreter.get_frame_stack().keys():
+        var: Variable = interpreter.get_frame_stack().get(key)
+        print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
 
 
 def execute_call(instruction):
@@ -642,8 +650,9 @@ def execute_jump(instruction):
 
 def execute_pushs(instruction):
     print("pushs")
-    value = instruction.get_arguments()[0].get_value()
-    interpreter.add_to_data_stack(value)
+    symbol: Argument = instruction.get_arguments()[0]
+    symbol_value = return_symbol_data(symbol, "value")
+    interpreter.add_to_data_stack(symbol_value)
 
 
 def execute_write(instruction):
@@ -743,6 +752,7 @@ def interpret_instructions():
             execute_jumpifeq(instruction)
         elif opcode == "JUMPIFNEQ":
             execute_jumpifneq(instruction)
+        interpreter.increase_current_instruction()
 
 
 if __name__ == '__main__':
@@ -754,6 +764,7 @@ if __name__ == '__main__':
     instructions = load_instructions(tree)
     instructions.sort(key=lambda inst: inst.order)
     interpreter = Interpreter()
+    interpreter.set_instructions_count(len(instructions))
     find_labels()
     interpret_instructions()
 
