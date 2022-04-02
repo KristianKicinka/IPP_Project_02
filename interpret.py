@@ -56,10 +56,45 @@ class Interpreter:
     def __init__(self):
         self.data_stack = list()
         self.call_stack = list()
-        self.frame_stack = dict()
+        self.frame_stack = list()
+
+        self.local_frame = None
+        self.global_frames = dict()
+        self.temporary_frame = None
+
         self.labels = dict()
         self.current_instruction_id = 0
         self.instructions_count = 0
+
+    def create_local_frame(self):
+        self.local_frame = dict()
+
+    def create_temporary_frame(self):
+        self.temporary_frame = dict()
+
+    def get_local_frame(self):
+        return self.local_frame
+
+    def add_to_local_frame(self, key, data):
+        self.local_frame[key] = data
+
+    def add_to_temporary_frame(self, key, data):
+        self.temporary_frame[key] = data
+
+    def get_temporary_frame(self):
+        return self.temporary_frame
+
+    def add_to_frame_stack(self, data):
+        self.frame_stack.append(data)
+
+    def get_frame_stack(self):
+        return self.frame_stack
+
+    def get_frame_stack_top(self):
+        if len(self.frame_stack) != 0:
+            return self.frame_stack[-1]
+        else:
+            return None
 
     def add_to_data_stack(self, data):
         self.data_stack.append(data)
@@ -67,8 +102,8 @@ class Interpreter:
     def add_to_call_stack(self, data):
         self.call_stack.append(data)
 
-    def add_to_frame_stack(self, key, data):
-        self.frame_stack[key] = data
+    def add_to_global_frames(self, key, data):
+        self.global_frames[key] = data
 
     def add_to_labels(self, key, data):
         self.labels[key] = data
@@ -85,8 +120,8 @@ class Interpreter:
     def get_call_stack(self):
         return self.call_stack
 
-    def get_frame_stack(self):
-        return self.frame_stack
+    def get_global_frames(self):
+        return self.global_frames
 
     def get_labels(self):
         return self.labels
@@ -261,20 +296,32 @@ def find_labels():
             interpreter.add_to_labels(label, index)
 
 
-def check_variable(instruction):
-    tmp_var = instruction.get_arguments()[0].get_value()
-    if not (tmp_var in interpreter.get_frame_stack().keys()):
-        close_script(SEMANTIC_ERROR)
-    return tmp_var
+def get_variable(var_name, frame_type):
+    var_obj = None
+    if frame_type == "GF":
+        if not (var_name in interpreter.get_global_frames().keys()):
+            close_script(SEMANTIC_ERROR)
+        var_obj = interpreter.get_global_frames().get(var_name)
+    elif frame_type == "LF":
+        if not(var_name in interpreter.get_frame_stack_top().keys()):
+            close_script(SEMANTIC_ERROR)
+        var_obj = interpreter.get_frame_stack_top().get(var_name)
+    elif frame_type == "TF":
+        if not (var_name in interpreter.get_temporary_frame().keys()):
+            close_script(SEMANTIC_ERROR)
+        var_obj = interpreter.get_temporary_frame().get(var_name)
+
+    return var_obj
 
 
 def return_symbol_data(symbol: Argument, data_type):
     data = None
     if symbol.get_arg_type() == "var":
-        name = symbol.get_value()
-        if not(name in interpreter.get_frame_stack().keys()):
-            close_script(SEMANTIC_ERROR)
-        var_obj: Variable = interpreter.get_frame_stack().get(name)
+        var_name = symbol.get_value()[3:]
+        frame_type = symbol.get_value()[:2]
+
+        var_obj = get_variable(var_name, frame_type)
+
         if data_type == "value":
             data = var_obj.get_value()
         elif data_type == "type":
@@ -288,7 +335,9 @@ def return_symbol_data(symbol: Argument, data_type):
 
 
 def process_aritmetic_operation(instruction, operation):
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
@@ -313,14 +362,14 @@ def process_aritmetic_operation(instruction, operation):
             close_script(WRONG_OPERAND_VALUE_ERROR)
         res = int(symbol_1_value) // int(symbol_2_value)
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("int")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def process_relation_operands(instruction, operation):
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
@@ -358,14 +407,14 @@ def process_relation_operands(instruction, operation):
         else:
             res = False
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("bool")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def process_logic_operators(instruction, operation):
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
@@ -378,10 +427,15 @@ def process_logic_operators(instruction, operation):
     elif operation == "or":
         res = bool(symbol_1_val) or bool(symbol_2_val)
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("bool")
-    interpreter.get_frame_stack()[var] = var_obj
+
+
+def get_variable_name_and_frame_type(instruction):
+    var = instruction.get_arguments()[0].get_value()
+    var_name = var[3:]
+    frame_type = var[:2]
+    return var_name, frame_type
 
 
 # Execute functions
@@ -389,96 +443,108 @@ def process_logic_operators(instruction, operation):
 
 def execute_defvar(instruction):
     print("defvar")
-    var = instruction.get_arguments()[0].get_value()
-    if var in interpreter.get_frame_stack().keys():
-        close_script(SEMANTIC_ERROR)
-    var_obj = Variable(var)
-    interpreter.add_to_frame_stack(var, var_obj)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj = Variable(var_name)
+
+    if frame_type == "GF":
+        if var_name in interpreter.get_global_frames().keys():
+            close_script(SEMANTIC_ERROR)
+        interpreter.add_to_global_frames(var_name, var_obj)
+    elif frame_type == "LF":
+        if var_name in interpreter.get_frame_stack_top().keys():
+            close_script(SEMANTIC_ERROR)
+        interpreter.get_frame_stack_top()[var_name] = var_obj
+    elif frame_type == "TF":
+        if var_name in interpreter.get_temporary_frame().keys():
+            close_script(SEMANTIC_ERROR)
+        interpreter.add_to_temporary_frame(var_name, var_obj)
 
 
 def execute_pops(instruction):
     print("pops")
     if len(interpreter.get_data_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
-    var = check_variable(instruction)
+
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     value = interpreter.get_data_stack().pop()
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(value)
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_move(instruction):
     print("move")
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol: Argument = instruction.get_arguments()[1]
 
     symbol_value = return_symbol_data(symbol, "value")
     symbol_type = return_symbol_data(symbol, "type")
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(symbol_value)
     var_obj.set_type(symbol_type)
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_int2char(instruction):
     # TODO Maybe check if symbol type is int
     print("int2char")
-    var = check_variable(instruction)
+
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol: Argument = instruction.get_arguments()[1]
     symbol_val = return_symbol_data(symbol, "value")
     if int(symbol_val) < 0 or int(symbol_val) > 1114111:
         close_script(STRING_WORKING_ERROR)
     new_val = chr(int(symbol_val))
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(new_val)
     var_obj.set_type("string")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_strlen(instruction):
     print("strlen")
-    var = check_variable(instruction)
+
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol: Argument = instruction.get_arguments()[1]
     # TODO maybe check if var is type of string
     symbol_string = return_symbol_data(symbol, "value")
     string_len = len(symbol_string)
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(string_len)
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_type(instruction):
     print("type")
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol: Argument = instruction.get_arguments()[1]
     symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type is None:
         symbol_type = ""
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(symbol_type)
     var_obj.set_type("string")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_not(instruction):
     print("not")
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol: Argument = instruction.get_arguments()[1]
     # TODO check if type of symbol is bool
     symbol_value = return_symbol_data(symbol, "value")
     res = not(bool(symbol_value))
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("bool")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_read(instruction):
@@ -534,7 +600,9 @@ def execute_or(instruction):
 def execute_str2int(instruction):
     print("str2int")
     # TODO maybe check if symbol is string
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol: Argument = instruction.get_arguments()[1]
     symbol_val = return_symbol_data(symbol, "value")
 
@@ -542,15 +610,15 @@ def execute_str2int(instruction):
         close_script(STRING_WORKING_ERROR)
     res = ord(symbol_val)
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("int")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_concat(instruction):
     print("concat")
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
@@ -565,16 +633,16 @@ def execute_concat(instruction):
 
     res = symbol_1_val + symbol_2_val
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("string")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_getchar(instruction):
     print("getchar")
     # TODO maybe check types of symbols 1(str) 2(int)
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
 
@@ -586,23 +654,22 @@ def execute_getchar(instruction):
 
     res = string[index]
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_obj.set_value(res)
     var_obj.set_type("string")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_setchar(instruction):
     # TODO maybe check types
     print("setchar")
-    var = check_variable(instruction)
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
     index = return_symbol_data(symbol_1, "value")
     string = return_symbol_data(symbol_2, "value")
 
-    var_obj: Variable = interpreter.get_frame_stack().get(var)
     var_str = var_obj.get_value()
 
     if index < 0 or index > len(var_str) or len(string) == 0:
@@ -612,23 +679,17 @@ def execute_setchar(instruction):
 
     var_obj.set_value(res)
     var_obj.set_type("string")
-    interpreter.get_frame_stack()[var] = var_obj
 
 
 def execute_createframe(instruction):
     print("createframe")
-    if TMP_FRAME in interpreter.get_frame_stack().keys():
-        interpreter.get_frame_stack()[TMP_FRAME] = TMP_VALUE
-    else:
-        interpreter.add_to_frame_stack(TMP_FRAME, TMP_VALUE)
+    interpreter.create_temporary_frame()
 
 
 def execute_pushframe(instruction):
     print("pushframe")
     if not(TMP_FRAME in interpreter.get_frame_stack().keys()):
         close_script(NOT_EXISTING_FRAME)
-
-
 
 
 def execute_popframe(instruction):
@@ -646,9 +707,20 @@ def execute_break(instruction):
     print(f"ID Spracovávanej inštrukcie : {current_inst_id}", file=sys.stderr)
     print(f"Počet spracovaných inštrukcií : {processed_instructions_count}", file=sys.stderr)
     print(f"Obsah rámcov : ", file=sys.stderr)
-    for key in interpreter.get_frame_stack().keys():
-        var: Variable = interpreter.get_frame_stack().get(key)
+    print("GF:")
+    for key in interpreter.get_global_frames().keys():
+        var: Variable = interpreter.get_global_frames().get(key)
         print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
+    print("LF:")
+    if not(interpreter.get_frame_stack_top() is None):
+        for key in interpreter.get_frame_stack_top().keys():
+            var: Variable = interpreter.get_temporary_frame().get(key)
+            print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
+    print("TF:")
+    if not(interpreter.get_temporary_frame() is None):
+        for key in interpreter.get_temporary_frame().keys():
+            var: Variable = interpreter.get_temporary_frame().get(key)
+            print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
 
 
 def execute_call(instruction):
@@ -677,7 +749,6 @@ def execute_exit(instruction):
     if not(0 <= int(symbol_value) <= 49):
         close_script(WRONG_OPERAND_VALUE_ERROR)
     exit(int(symbol_value))
-
 
 
 def execute_dprint(instruction):
