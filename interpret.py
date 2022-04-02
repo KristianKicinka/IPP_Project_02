@@ -642,6 +642,9 @@ def execute_exit(instruction):
 
 def execute_dprint(instruction):
     print("dprint")
+    symbol: Argument = instruction.get_arguments()[0]
+    symbol_val = return_symbol_data(symbol, "value")
+    print(symbol_val, file=sys.stderr)
 
 
 def execute_jumpifeq(instruction):
