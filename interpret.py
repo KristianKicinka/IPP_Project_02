@@ -3,6 +3,9 @@ import argparse
 import sys
 import xml.etree.ElementTree as ET
 
+TMP_FRAME = "TF@tmp"
+TMP_VALUE = None
+
 DEFINED_INSTRUCTIONS = {"DEFVAR": 1, "POPS": 1, "MOVE": 2, "INT2CHAR": 2, "STRLEN": 2, "TYPE": 2, "NOT": 2, "READ": 2,
                         "ADD": 3, "SUB": 3, "MUL": 3, "IDIV": 3, "LT": 3, "GT": 3, "EQ": 3, "AND": 3, "OR": 3,
                         "STRI2INT": 3, "CONCAT": 3, "GETCHAR": 3, "SETCHAR": 3, "CREATEFRAME": 0, "PUSHFRAME": 0,
@@ -614,10 +617,18 @@ def execute_setchar(instruction):
 
 def execute_createframe(instruction):
     print("createframe")
+    if TMP_FRAME in interpreter.get_frame_stack().keys():
+        interpreter.get_frame_stack()[TMP_FRAME] = TMP_VALUE
+    else:
+        interpreter.add_to_frame_stack(TMP_FRAME, TMP_VALUE)
 
 
 def execute_pushframe(instruction):
     print("pushframe")
+    if not(TMP_FRAME in interpreter.get_frame_stack().keys()):
+        close_script(NOT_EXISTING_FRAME)
+
+
 
 
 def execute_popframe(instruction):
@@ -661,6 +672,12 @@ def execute_write(instruction):
 
 def execute_exit(instruction):
     print("exit")
+    symbol: Argument = instruction.get_arguments()[0]
+    symbol_value = return_symbol_data(symbol, "value")
+    if not(0 <= int(symbol_value) <= 49):
+        close_script(WRONG_OPERAND_VALUE_ERROR)
+    exit(int(symbol_value))
+
 
 
 def execute_dprint(instruction):
