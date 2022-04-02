@@ -55,6 +55,8 @@ class Interpreter:
         self.call_stack = list()
         self.frame_stack = dict()
         self.labels = dict()
+        self.current_instruction_id = 0
+        self.instructions_count = 0
 
     def add_to_data_stack(self, data):
         self.data_stack.append(data)
@@ -68,6 +70,12 @@ class Interpreter:
     def add_to_labels(self, key, data):
         self.labels[key] = data
 
+    def set_instructions_count(self, count):
+        self.instructions_count = count
+
+    def increase_current_instruction(self):
+        self.current_instruction_id += 1
+
     def get_data_stack(self):
         return self.data_stack
 
@@ -79,6 +87,12 @@ class Interpreter:
 
     def get_labels(self):
         return self.labels
+
+    def get_instructions_count(self):
+        return self.instructions_count
+
+    def get_current_instruction_id(self):
+        return self.current_instruction_id
 
 
 class Argument:
