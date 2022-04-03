@@ -494,14 +494,19 @@ def execute_move(instruction):
 
 
 def execute_int2char(instruction):
-    # TODO Maybe check if symbol type is int
     print("int2char")
 
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol: Argument = instruction.get_arguments()[1]
+
+    symbol_type = return_symbol_data(symbol, "type")
     symbol_val = return_symbol_data(symbol, "value")
+
+    if symbol_type != "int":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
     if int(symbol_val) < 0 or int(symbol_val) > 1114111:
         close_script(STRING_WORKING_ERROR)
     new_val = chr(int(symbol_val))
@@ -517,7 +522,12 @@ def execute_strlen(instruction):
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol: Argument = instruction.get_arguments()[1]
-    # TODO maybe check if var is type of string
+
+    symbol_type = return_symbol_data(symbol, "type")
+
+    if symbol_type != "string":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
     symbol_string = return_symbol_data(symbol, "value")
     string_len = len(symbol_string)
 
