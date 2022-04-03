@@ -73,13 +73,22 @@ class Interpreter:
         return self.local_frame
 
     def add_to_local_frame(self, key, data):
-        self.local_frame[key] = data
+        if not(self.local_frame is None):
+            self.local_frame[key] = data
+        else:
+            close_script(NOT_EXISTING_FRAME)
 
     def add_to_temporary_frame(self, key, data):
-        self.temporary_frame[key] = data
+        if not (self.temporary_frame is None):
+            self.temporary_frame[key] = data
+        else:
+            close_script(NOT_EXISTING_FRAME)
 
     def get_temporary_frame(self):
-        return self.temporary_frame
+        if not(self.temporary_frame is None):
+            return self.temporary_frame
+        else:
+            close_script(NOT_EXISTING_FRAME)
 
     def add_to_frame_stack(self, data):
         self.frame_stack.append(data)
@@ -91,7 +100,7 @@ class Interpreter:
         if len(self.frame_stack) != 0:
             return self.frame_stack[-1]
         else:
-            return None
+            close_script(NOT_EXISTING_FRAME)
 
     def add_to_data_stack(self, data):
         self.data_stack.append(data)
@@ -685,12 +694,15 @@ def execute_createframe(instruction):
 
 def execute_pushframe(instruction):
     print("pushframe")
-    if not(TMP_FRAME in interpreter.get_frame_stack().keys()):
-        close_script(NOT_EXISTING_FRAME)
+    tmp_frame = interpreter.get_temporary_frame()
+    interpreter.add_to_frame_stack(tmp_frame)
+    interpreter.temporary_frame = None
 
 
 def execute_popframe(instruction):
     print("popframe")
+    local_frame = interpreter.frame_stack.pop()
+    interpreter.temporary_frame = local_frame
 
 
 def execute_return(instruction):
@@ -722,6 +734,9 @@ def execute_break(instruction):
 
 def execute_call(instruction):
     print("call")
+    position = interpreter.get_current_instruction_id() + 1
+    interpreter.add_to_call_stack(position)
+    # TODO Do jump on label
 
 
 def execute_jump(instruction):
