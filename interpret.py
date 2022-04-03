@@ -295,7 +295,7 @@ def find_labels():
 
     for instruction in instructions:
         if instruction.get_opcode() == "LABEL":
-            label = instruction.get_arguments()[0]
+            label = instruction.get_arguments()[0].get_value()
             if label in interpreter.get_labels().keys():
                 close_script(SEMANTIC_ERROR)
             index = instructions.index(instruction)
@@ -558,51 +558,6 @@ def execute_read(instruction):
     # TODO do read function
 
 
-def execute_add(instruction):
-    print("add")
-    process_aritmetic_operation(instruction, "add")
-
-
-def execute_sub(instruction):
-    print("sub")
-    process_aritmetic_operation(instruction, "sub")
-
-
-def execute_mul(instruction):
-    print("mul")
-    process_aritmetic_operation(instruction, "mul")
-
-
-def execute_idiv(instruction):
-    print("idiv")
-    process_aritmetic_operation(instruction, "idiv")
-
-
-def execute_lt(instruction):
-    print("lt")
-    process_relation_operands(instruction, "lt")
-
-
-def execute_gt(instruction):
-    print("gt")
-    process_relation_operands(instruction, "gt")
-
-
-def execute_eq(instruction):
-    print("eq")
-    process_relation_operands(instruction, "eq")
-
-
-def execute_and(instruction):
-    print("and")
-    process_logic_operators(instruction, "and")
-
-
-def execute_or(instruction):
-    print("or")
-    process_logic_operators(instruction, "or")
-
-
 def execute_str2int(instruction):
     print("str2int")
     # TODO maybe check if symbol is string
@@ -736,11 +691,16 @@ def execute_call(instruction):
     print("call")
     position = interpreter.get_current_instruction_id() + 1
     interpreter.add_to_call_stack(position)
-    # TODO Do jump on label
+    label = instruction.get_arguments()[0].get_value()
+    new_index = interpreter.get_labels().get(label)
+    interpreter.current_instruction_id = new_index
 
 
 def execute_jump(instruction):
     print("jump")
+    label = instruction.get_arguments()[0].get_value()
+    new_index = interpreter.get_labels().get(label)
+    interpreter.current_instruction_id = new_index
 
 
 def execute_pushs(instruction):
@@ -800,23 +760,23 @@ def interpret_instructions():
         elif opcode == "READ":
             execute_read(instruction)
         elif opcode == "ADD":
-            execute_add(instruction)
+            process_aritmetic_operation(instruction, "add")
         elif opcode == "SUB":
-            execute_sub(instruction)
+            process_aritmetic_operation(instruction, "sub")
         elif opcode == "MUL":
-            execute_mul(instruction)
+            process_aritmetic_operation(instruction, "mul")
         elif opcode == "IDIV":
-            execute_idiv(instruction)
+            process_aritmetic_operation(instruction, "idiv")
         elif opcode == "LT":
-            execute_lt(instruction)
+            process_relation_operands(instruction, "lt")
         elif opcode == "GT":
-            execute_gt(instruction)
+            process_relation_operands(instruction, "gt")
         elif opcode == "EQ":
-            execute_eq(instruction)
+            process_relation_operands(instruction, "eq")
         elif opcode == "AND":
-            execute_and(instruction)
+            process_logic_operators(instruction, "and")
         elif opcode == "OR":
-            execute_or(instruction)
+            process_logic_operators(instruction, "or")
         elif opcode == "STR2INT":
             execute_str2int(instruction)
         elif opcode == "CONCAT":
