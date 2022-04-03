@@ -545,8 +545,13 @@ def execute_not(instruction):
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol: Argument = instruction.get_arguments()[1]
-    # TODO check if type of symbol is bool
+
+    symbol_type = return_symbol_data(symbol, "type")
     symbol_value = return_symbol_data(symbol, "value")
+
+    if symbol_type != "bool":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
     res = not(bool(symbol_value))
 
     var_obj.set_value(res)
