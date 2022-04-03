@@ -780,7 +780,8 @@ def execute_jumpifneq(instruction):
 
 def interpret_instructions():
 
-    for instruction in instructions:
+    while interpreter.get_current_instruction_id() < len(instructions):
+        instruction = instructions[interpreter.get_current_instruction_id()]
         opcode = instruction.get_opcode()
         if opcode == "DEFVAR":
             execute_defvar(instruction)
