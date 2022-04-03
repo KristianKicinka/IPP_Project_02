@@ -674,6 +674,10 @@ def execute_popframe(instruction):
 
 def execute_return(instruction):
     print("return")
+    if len(interpreter.get_call_stack()) == 0:
+        close_script(MISSING_VALUE_ERROR)
+    position = interpreter.get_call_stack().pop()
+    interpreter.current_instruction_id = position
 
 
 def execute_break(instruction):
@@ -867,7 +871,6 @@ def interpret_instructions():
         elif opcode == "JUMPIFNEQ":
             execute_jumpifneq(instruction)
         interpreter.increase_current_instruction()
-        print(interpreter.get_data_stack())
 
 
 if __name__ == '__main__':
