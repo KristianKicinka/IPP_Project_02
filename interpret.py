@@ -55,7 +55,6 @@ class Interpreter:
         self.call_stack = list()
         self.frame_stack = list()
 
-        self.local_frame = None
         self.global_frames = dict()
         self.temporary_frame = None
 
@@ -63,20 +62,8 @@ class Interpreter:
         self.current_instruction_id = 0
         self.instructions_count = 0
 
-    def create_local_frame(self):
-        self.local_frame = dict()
-
     def create_temporary_frame(self):
         self.temporary_frame = dict()
-
-    def get_local_frame(self):
-        return self.local_frame
-
-    def add_to_local_frame(self, key, data):
-        if not(self.local_frame is None):
-            self.local_frame[key] = data
-        else:
-            close_script(NOT_EXISTING_FRAME)
 
     def add_to_temporary_frame(self, key, data):
         if not (self.temporary_frame is None):
@@ -476,6 +463,15 @@ def execute_pops(instruction):
 
     value = interpreter.get_data_stack().pop()
 
+    if type(value) == bool:
+        var_obj.set_type("bool")
+    elif type(value) == int:
+        var_obj.set_type("int")
+    elif value == "nil":
+        var_obj.set_type("nil")
+    elif type(value) == str:
+        var_obj.set_type("string")
+
     var_obj.set_value(value)
 
 
@@ -502,8 +498,9 @@ def execute_int2char(instruction):
     symbol: Argument = instruction.get_arguments()[1]
 
     symbol_type = return_symbol_data(symbol, "type")
+    print(symbol_type)
     symbol_val = return_symbol_data(symbol, "value")
-
+    print(symbol_val)
     if symbol_type != "int":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
@@ -722,6 +719,15 @@ def execute_pushs(instruction):
     print("pushs")
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
+    symbol_type = return_symbol_data(symbol, "type")
+    if symbol_type == "int":
+        symbol_value = int(symbol_value)
+    elif symbol_type == "bool":
+        if symbol_value == "true":
+            symbol_value = True
+        elif symbol_value == "false":
+            symbol_value = False
+
     interpreter.add_to_data_stack(symbol_value)
 
 
@@ -747,10 +753,42 @@ def execute_dprint(instruction):
 
 def execute_jumpifeq(instruction):
     print("jumpifeq")
+    symbol_1 = instruction.get_arguments()[1]
+    symbol_2 = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
+    symbol_1_value = return_symbol_data(symbol_1, "value")
+    symbol_2_value = return_symbol_data(symbol_2, "value")
+
+    if not((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
+           and symbol_1_value == symbol_2_value):
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
+    label = instruction.get_arguments()[0].get_value()
+    new_index = interpreter.get_labels().get(label)
+    interpreter.current_instruction_id = new_index
 
 
 def execute_jumpifneq(instruction):
     print("jumpifneq")
+    symbol_1 = instruction.get_arguments()[1]
+    symbol_2 = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
+    symbol_1_value = return_symbol_data(symbol_1, "value")
+    symbol_2_value = return_symbol_data(symbol_2, "value")
+
+    if not((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
+           and symbol_1_value != symbol_2_value):
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
+    label = instruction.get_arguments()[0].get_value()
+    new_index = interpreter.get_labels().get(label)
+    interpreter.current_instruction_id = new_index
 
 
 def interpret_instructions():
@@ -829,6 +867,7 @@ def interpret_instructions():
         elif opcode == "JUMPIFNEQ":
             execute_jumpifneq(instruction)
         interpreter.increase_current_instruction()
+        print(interpreter.get_data_stack())
 
 
 if __name__ == '__main__':
@@ -843,5 +882,6 @@ if __name__ == '__main__':
     interpreter.set_instructions_count(len(instructions))
     find_labels()
     interpret_instructions()
+
 
 
