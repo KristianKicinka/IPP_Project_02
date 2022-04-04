@@ -404,6 +404,16 @@ def process_value(tmp_value, value_type):
         for escape in escapes_list:
             char = chr(int(escape[1:]))
             new_value = new_value.replace(escape, char)
+    elif value_type == "int":
+        try:
+            new_value = int(new_value)
+        except:
+            close_script(XML_STRUCTURE_ERROR)
+    elif value_type == "bool":
+        if new_value == "true":
+            new_value = True
+        elif new_value == "false":
+            new_value = False
 
     return new_value
 
@@ -423,12 +433,6 @@ def process_aritmetic_operation(instruction, operation):
 
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
-
-    try:
-        symbol_1_value = int(symbol_1_value)
-        symbol_2_value = int(symbol_2_value)
-    except:
-        close_script(XML_STRUCTURE_ERROR)
 
     res = None
     if operation == "add":
@@ -805,14 +809,6 @@ def execute_jump(instruction):
 def execute_pushs(instruction):
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
-    symbol_type = return_symbol_data(symbol, "type")
-    if symbol_type == "int":
-        symbol_value = int(symbol_value)
-    elif symbol_type == "bool":
-        if symbol_value == "true":
-            symbol_value = True
-        elif symbol_value == "false":
-            symbol_value = False
 
     interpreter.add_to_data_stack(symbol_value)
 
@@ -860,14 +856,14 @@ def execute_jumpifeq(instruction):
     symbol_2_value = return_symbol_data(symbol_2, "value")
 
     if not (symbol_1_type == symbol_2_type or
-            (symbol_1_type == "nil" and symbol_2_type != "nil") or (symbol_2_type == "nil" and symbol_1_type != "nil")
-            and symbol_1_value == symbol_2_value):
+            (symbol_1_type == "nil" and symbol_2_type != "nil") or (symbol_2_type == "nil" and symbol_1_type != "nil")):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
-    label = instruction.get_arguments()[0].get_value()
-    check_labels(label)
-    new_index = interpreter.get_labels().get(label)
-    interpreter.current_instruction_id = new_index
+    if symbol_1_value == symbol_2_value:
+        label = instruction.get_arguments()[0].get_value()
+        check_labels(label)
+        new_index = interpreter.get_labels().get(label)
+        interpreter.current_instruction_id = new_index
 
 
 def execute_jumpifneq(instruction):
@@ -880,14 +876,14 @@ def execute_jumpifneq(instruction):
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
 
-    if not ((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
-            and symbol_1_value != symbol_2_value):
+    if not (symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
-    label = instruction.get_arguments()[0].get_value()
-    check_labels(label)
-    new_index = interpreter.get_labels().get(label)
-    interpreter.current_instruction_id = new_index
+    if symbol_1_value != symbol_2_value:
+        label = instruction.get_arguments()[0].get_value()
+        check_labels(label)
+        new_index = interpreter.get_labels().get(label)
+        interpreter.current_instruction_id = new_index
 
 
 def interpret_instructions():
