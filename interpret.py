@@ -316,15 +316,27 @@ def return_symbol_data(symbol: Argument, data_type):
         var_obj = get_variable(var_name, frame_type)
 
         if data_type == "value":
-            data = var_obj.get_value()
+            data = process_value(var_obj.get_value(), var_obj.get_type())
         elif data_type == "type":
             data = var_obj.get_type()
     else:
         if data_type == "value":
-            data = symbol.get_value()
+            data = process_value(symbol.get_value(), symbol.get_arg_type())
         elif data_type == "type":
             data = symbol.get_arg_type()
     return data
+
+
+def process_value(tmp_value, value_type):
+    new_value = tmp_value
+    if value_type == "string":
+        regex = r"\\[\d]{3}"
+        escapes_list = re.findall(regex, tmp_value)
+        for escape in escapes_list:
+            char = chr(int(escape[1:]))
+            new_value = new_value.replace(escape, char)
+
+    return new_value
 
 
 def process_aritmetic_operation(instruction, operation):
