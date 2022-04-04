@@ -129,7 +129,8 @@ class Interpreter:
 
 class Argument:
 
-    def __init__(self, arg_type, value):
+    def __init__(self, name, arg_type, value):
+        self.name = name
         self.arg_type = arg_type
         self.value = value
 
@@ -138,6 +139,9 @@ class Argument:
 
     def get_value(self):
         return self.value
+
+    def get_name(self):
+        return self.name
 
 
 class Variable:
@@ -247,7 +251,7 @@ def load_input_file(inp_file):
 def check_xml_file(tmp_tree):
     root = tmp_tree.getroot()
     if root.tag != "program":
-        close_script(XML_FORMAT_ERROR)
+        close_script(XML_STRUCTURE_ERROR)
 
     for child_element in root:
         if child_element.tag != "instruction":
@@ -273,15 +277,24 @@ def load_instructions(tmp_tree):
             close_script(XML_STRUCTURE_ERROR)
 
         order_number = int(child_element.attrib.get("order"))
-        if order_number < 0:
+        if order_number <= 0:
             close_script(XML_STRUCTURE_ERROR)
 
         instruction = Instruction(child_element.attrib.get("opcode").upper(), int(child_element.attrib.get("order")))
 
+        argument_names = list()
         for sub_child in child_element:
-            argument = Argument(sub_child.attrib.get("type"), sub_child.text)
+            argument = Argument(sub_child.tag, sub_child.attrib.get("type"), sub_child.text)
             instruction.add_argument(argument)
-        if len(instruction.get_arguments()) != DEFINED_INSTRUCTIONS.get(instruction.get_opcode()):
+            argument_names.append(sub_child.tag)
+
+        if check_duplicities(argument_names):
+            close_script(XML_STRUCTURE_ERROR)
+
+        arguments = instruction.get_arguments()
+        arguments.sort(key=lambda arg: arg.name)
+
+        if len(arguments) != DEFINED_INSTRUCTIONS.get(instruction.get_opcode()):
             close_script(XML_STRUCTURE_ERROR)
 
         tmp_instructions.append(instruction)
