@@ -294,8 +294,10 @@ def load_instructions(tmp_tree):
         arguments = instruction.get_arguments()
         arguments.sort(key=lambda arg: arg.name)
 
-        if len(arguments) != DEFINED_INSTRUCTIONS.get(instruction.get_opcode()):
+        if len(arguments) != int(DEFINED_INSTRUCTIONS.get(instruction.get_opcode())):
             close_script(XML_STRUCTURE_ERROR)
+
+        check_arguments(arguments)
 
         tmp_instructions.append(instruction)
 
@@ -314,6 +316,14 @@ def check_duplicities(value_list: list):
         if value_list.count(element) > 1:
             return True
     return False
+
+
+def check_arguments(arguments: list):
+    index = 1
+    for argument in arguments:
+        if not(int(argument.get_name()[3:]) == index):
+            close_script(XML_STRUCTURE_ERROR)
+        index += 1
 
 
 def find_labels():
