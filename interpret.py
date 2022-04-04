@@ -275,7 +275,21 @@ def load_instructions(tmp_tree):
 
         tmp_instructions.append(instruction)
 
+    orders_list = list()
+    for instr in tmp_instructions:
+        orders_list.append(instr.get_order())
+
+    if check_duplicities(orders_list):
+        close_script(XML_STRUCTURE_ERROR)
+
     return tmp_instructions
+
+
+def check_duplicities(value_list: list):
+    for element in value_list:
+        if value_list.count(element) > 1:
+            return True
+    return False
 
 
 def find_labels():
@@ -505,9 +519,8 @@ def execute_int2char(instruction):
     symbol: Argument = instruction.get_arguments()[1]
 
     symbol_type = return_symbol_data(symbol, "type")
-    print(symbol_type)
     symbol_val = return_symbol_data(symbol, "value")
-    print(symbol_val)
+
     if symbol_type != "int":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
@@ -743,8 +756,21 @@ def execute_pushs(instruction):
 
 
 def execute_write(instruction):
-    print("write")
-    # TODO Do write function
+    symbol = instruction.get_arguments()[0]
+    symbol_type = return_symbol_data(symbol, "type")
+    symbol_value = return_symbol_data(symbol, "value")
+
+    if symbol_type == "int":
+        symbol_value = int(symbol_value)
+    elif symbol_type == "bool":
+        if symbol_value == "true" or symbol_value is True:
+            symbol_value = "true"
+        elif symbol_value == "false" or symbol_value is False:
+            symbol_value = "false"
+    elif symbol_type == "nil":
+        symbol_value = ""
+
+    print(symbol_value, end='')
 
 
 def execute_exit(instruction):
