@@ -370,15 +370,15 @@ def get_variable(var_name, frame_type):
     var_obj = None
     if frame_type == "GF":
         if not (var_name in interpreter.get_global_frames().keys()):
-            close_script(SEMANTIC_ERROR)
+            close_script(NOT_EXISTING_VARIABLE)
         var_obj = interpreter.get_global_frames().get(var_name)
     elif frame_type == "LF":
         if not (var_name in interpreter.get_frame_stack_top().keys()):
-            close_script(SEMANTIC_ERROR)
+            close_script(NOT_EXISTING_VARIABLE)
         var_obj = interpreter.get_frame_stack_top().get(var_name)
     elif frame_type == "TF":
         if not (var_name in interpreter.get_temporary_frame().keys()):
-            close_script(SEMANTIC_ERROR)
+            close_script(NOT_EXISTING_VARIABLE)
         var_obj = interpreter.get_temporary_frame().get(var_name)
 
     return var_obj
@@ -394,6 +394,8 @@ def return_symbol_data(symbol: Argument, data_type):
 
         if data_type == "value":
             data = process_value(var_obj.get_value(), var_obj.get_type())
+            if data is None:
+                close_script(MISSING_VALUE_ERROR)
         elif data_type == "type":
             data = var_obj.get_type()
     else:
@@ -433,14 +435,14 @@ def process_aritmetic_operation(instruction, operation):
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
+    symbol_1_value = return_symbol_data(symbol_1, "value")
+    symbol_2_value = return_symbol_data(symbol_2, "value")
+
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
     if not(symbol_1_type == "int" and symbol_2_type == "int"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-
-    symbol_1_value = return_symbol_data(symbol_1, "value")
-    symbol_2_value = return_symbol_data(symbol_2, "value")
 
     res = None
     if operation == "add":
@@ -465,6 +467,9 @@ def process_relation_operands(instruction, operation):
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
+    symbol_1_value = return_symbol_data(symbol_1, "value")
+    symbol_2_value = return_symbol_data(symbol_2, "value")
+
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
@@ -477,9 +482,6 @@ def process_relation_operands(instruction, operation):
             ((symbol_1_type == "int" or symbol_1_type == "bool" or symbol_1_type == "string") and
              symbol_2_type == "nil")):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-
-    symbol_1_value = return_symbol_data(symbol_1, "value")
-    symbol_2_value = return_symbol_data(symbol_2, "value")
 
     res = None
 
@@ -512,6 +514,12 @@ def process_logic_operators(instruction, operation):
 
     symbol_1_val = return_symbol_data(symbol_1, "value")
     symbol_2_val = return_symbol_data(symbol_2, "value")
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
+    if not(symbol_1_type == "bool" and symbol_2_type == "bool"):
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     res = None
     if operation == "and":
@@ -591,8 +599,8 @@ def execute_int2char(instruction):
 
     symbol: Argument = instruction.get_arguments()[1]
 
-    symbol_type = return_symbol_data(symbol, "type")
     symbol_val = return_symbol_data(symbol, "value")
+    symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type != "int":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
@@ -611,12 +619,12 @@ def execute_strlen(instruction):
 
     symbol: Argument = instruction.get_arguments()[1]
 
+    symbol_string = return_symbol_data(symbol, "value")
     symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type != "string":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
-    symbol_string = return_symbol_data(symbol, "value")
     string_len = len(symbol_string)
 
     var_obj.set_value(string_len)
@@ -642,8 +650,8 @@ def execute_not(instruction):
 
     symbol: Argument = instruction.get_arguments()[1]
 
-    symbol_type = return_symbol_data(symbol, "type")
     symbol_value = return_symbol_data(symbol, "value")
+    symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type != "bool":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
@@ -689,12 +697,12 @@ def execute_str2int(instruction):
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol: Argument = instruction.get_arguments()[1]
+
+    symbol_val = return_symbol_data(symbol, "value")
     symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type != "string":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-
-    symbol_val = return_symbol_data(symbol, "value")
 
     if len(symbol_val) > 1 or int(symbol_val) < 0 or int(symbol_val) > 65535:
         close_script(STRING_WORKING_ERROR)
@@ -711,14 +719,14 @@ def execute_concat(instruction):
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
+    symbol_1_val = return_symbol_data(symbol_1, "value")
+    symbol_2_val = return_symbol_data(symbol_2, "value")
+
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
     if symbol_1_type != "string" or symbol_2_type != "string":
-        close_script(SEMANTIC_ERROR)
-
-    symbol_1_val = return_symbol_data(symbol_1, "value")
-    symbol_2_val = return_symbol_data(symbol_2, "value")
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     res = symbol_1_val + symbol_2_val
 
@@ -733,14 +741,14 @@ def execute_getchar(instruction):
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
 
+    string = return_symbol_data(symbol_1, "value")
+    index = return_symbol_data(symbol_2, "value")
+
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
-    if symbol_1_type != "string" and symbol_2_type != "int":
+    if not(symbol_1_type == "string" and symbol_2_type == "int"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-
-    string = return_symbol_data(symbol_1, "value")
-    index = return_symbol_data(symbol_2, "value")
 
     if index < 0 or index > len(string):
         close_script(STRING_WORKING_ERROR)
@@ -758,15 +766,15 @@ def execute_setchar(instruction):
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
 
+    index = return_symbol_data(symbol_1, "value")
+    string = return_symbol_data(symbol_2, "value")
+
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
     var_type = var_obj.get_type()
 
-    if var_type != "string" and symbol_1_type != "int" and symbol_2_type != "string":
+    if not(var_type == "string" and symbol_1_type == "int" and symbol_2_type == "string"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-
-    index = return_symbol_data(symbol_1, "value")
-    string = return_symbol_data(symbol_2, "value")
 
     var_str = var_obj.get_value()
 
@@ -848,8 +856,8 @@ def execute_pushs(instruction):
 
 def execute_write(instruction):
     symbol = instruction.get_arguments()[0]
-    symbol_type = return_symbol_data(symbol, "type")
     symbol_value = return_symbol_data(symbol, "value")
+    symbol_type = return_symbol_data(symbol, "type")
 
     if symbol_type == "int":
         symbol_value = int(symbol_value)
@@ -882,11 +890,11 @@ def execute_jumpifeq(instruction):
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
 
-    symbol_1_type = return_symbol_data(symbol_1, "type")
-    symbol_2_type = return_symbol_data(symbol_2, "type")
-
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
 
     if not (symbol_1_type == symbol_2_type or
             (symbol_1_type == "nil" and symbol_2_type != "nil") or (symbol_2_type == "nil" and symbol_1_type != "nil")):
@@ -903,11 +911,11 @@ def execute_jumpifneq(instruction):
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
 
-    symbol_1_type = return_symbol_data(symbol_1, "type")
-    symbol_2_type = return_symbol_data(symbol_2, "type")
-
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
 
     if not (symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
