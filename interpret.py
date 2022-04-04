@@ -335,6 +335,14 @@ def check_duplicities(value_list: list):
     return False
 
 
+def check_integer(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
 def check_arguments(arguments: list):
     index = 1
     for argument in arguments:
@@ -647,8 +655,33 @@ def execute_not(instruction):
 
 
 def execute_read(instruction):
-    print("read")
-    # TODO do read function
+    var_name, frame_type = get_variable_name_and_frame_type(instruction)
+    var_obj: Variable = get_variable(var_name, frame_type)
+    symbol: Argument = instruction.get_arguments()[1]
+    symbol_value = return_symbol_data(symbol, "value")
+
+    value = None
+
+    for line in input_file:
+        line = line.rstrip("\n")
+        if (line == "true" or line == "true") and symbol_value == "bool":
+            value = True
+            break
+        elif (line == "false" or line == "False") and symbol_value == "bool":
+            value = False
+            break
+        elif check_integer(line) and symbol_value == "int":
+            value = int(line)
+            break
+        elif type(line) is str and symbol_value == "string":
+            value = line
+            break
+    if value is None:
+        symbol_value = "nil"
+        value = "nil"
+
+    var_obj.set_value(value)
+    var_obj.set_type(symbol_value)
 
 
 def execute_str2int(instruction):
