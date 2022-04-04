@@ -25,6 +25,7 @@ WRONG_OPERAND_VALUE_ERROR = 57
 STRING_WORKING_ERROR = 58
 INTERNAL_ERROR = 99
 
+
 # Objects
 
 
@@ -72,7 +73,7 @@ class Interpreter:
             close_script(NOT_EXISTING_FRAME)
 
     def get_temporary_frame(self):
-        if not(self.temporary_frame is None):
+        if not (self.temporary_frame is None):
             return self.temporary_frame
         else:
             close_script(NOT_EXISTING_FRAME)
@@ -219,11 +220,18 @@ def process_arguments():
 
 
 def load_xml_file(src_file):
+    tmp_tree = None
 
     if src_file is None:
-        tmp_tree = ET.parse(sys.stdin)
+        try:
+            tmp_tree = ET.parse(sys.stdin)
+        except:
+            close_script(XML_FORMAT_ERROR)
     else:
-        tmp_tree = ET.parse(src_file)
+        try:
+            tmp_tree = ET.parse(src_file)
+        except:
+            close_script(XML_FORMAT_ERROR)
 
     return tmp_tree
 
@@ -238,7 +246,6 @@ def load_input_file(inp_file):
 
 def check_xml_file(tmp_tree):
     root = tmp_tree.getroot()
-
     if root.tag != "program":
         close_script(XML_FORMAT_ERROR)
 
@@ -246,14 +253,14 @@ def check_xml_file(tmp_tree):
         if child_element.tag != "instruction":
             close_script(XML_STRUCTURE_ERROR)
         instruction_attr_list = list(child_element.attrib.keys())
-        if not("order" in instruction_attr_list) or not("opcode" in instruction_attr_list):
-            close_script(XML_FORMAT_ERROR)
+        if not ("order" in instruction_attr_list) or not ("opcode" in instruction_attr_list):
+            close_script(XML_STRUCTURE_ERROR)
         for sub_element in child_element:
-            if not(re.match(r"arg[123]", sub_element.tag)):
+            if not (re.match(r"arg[123]", sub_element.tag)):
                 close_script(XML_STRUCTURE_ERROR)
             argument_attr_list = list(sub_element.attrib.keys())
-            if not("type" in argument_attr_list):
-                close_script(XML_FORMAT_ERROR)
+            if not ("type" in argument_attr_list):
+                close_script(XML_STRUCTURE_ERROR)
 
 
 def load_instructions(tmp_tree):
@@ -262,7 +269,11 @@ def load_instructions(tmp_tree):
     root = tmp_tree.getroot()
 
     for child_element in root:
-        if not(child_element.attrib.get("opcode").upper() in defined_instructions):
+        if not (child_element.attrib.get("opcode").upper() in defined_instructions):
+            close_script(XML_STRUCTURE_ERROR)
+
+        order_number = int(child_element.attrib.get("order"))
+        if order_number < 0:
             close_script(XML_STRUCTURE_ERROR)
 
         instruction = Instruction(child_element.attrib.get("opcode").upper(), int(child_element.attrib.get("order")))
@@ -293,7 +304,6 @@ def check_duplicities(value_list: list):
 
 
 def find_labels():
-
     for instruction in instructions:
         if instruction.get_opcode() == "LABEL":
             label = instruction.get_arguments()[0].get_value()
@@ -310,7 +320,7 @@ def get_variable(var_name, frame_type):
             close_script(SEMANTIC_ERROR)
         var_obj = interpreter.get_global_frames().get(var_name)
     elif frame_type == "LF":
-        if not(var_name in interpreter.get_frame_stack_top().keys()):
+        if not (var_name in interpreter.get_frame_stack_top().keys()):
             close_script(SEMANTIC_ERROR)
         var_obj = interpreter.get_frame_stack_top().get(var_name)
     elif frame_type == "TF":
@@ -363,7 +373,7 @@ def process_aritmetic_operation(instruction, operation):
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
-    if not (symbol_1_type != "int" and symbol_2_type != "int"):
+    if symbol_1_type != "int" and symbol_2_type != "int":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     symbol_1_value = return_symbol_data(symbol_1, "value")
@@ -395,14 +405,16 @@ def process_relation_operands(instruction, operation):
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
-    if not((symbol_1_type == "int" or symbol_1_type == "string" or symbol_1_type == "bool")
-           and symbol_1_type == symbol_2_type) and operation != "eq":
+    if not ((symbol_1_type == "int" or symbol_1_type == "string" or symbol_1_type == "bool")
+            and symbol_1_type == symbol_2_type) and operation != "eq":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
-    if operation == "eq" and not(
-            (symbol_1_type == "nil" and (symbol_2_type == "int" or symbol_2_type == "bool" or symbol_2_type == "string"))
+    if operation == "eq" and not (
+            (symbol_1_type == "nil" and (
+                    symbol_2_type == "int" or symbol_2_type == "bool" or symbol_2_type == "string"))
             or
-            ((symbol_1_type == "int" or symbol_1_type == "bool" or symbol_1_type == "string") and symbol_2_type == "nil")
-            ):
+            ((
+                     symbol_1_type == "int" or symbol_1_type == "bool" or symbol_1_type == "string") and symbol_2_type == "nil")
+    ):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     symbol_1_value = return_symbol_data(symbol_1, "value")
@@ -575,7 +587,7 @@ def execute_not(instruction):
     if symbol_type != "bool":
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
-    res = not(bool(symbol_value))
+    res = not (bool(symbol_value))
 
     var_obj.set_value(res)
     var_obj.set_type("bool")
@@ -629,7 +641,6 @@ def execute_concat(instruction):
 
 
 def execute_getchar(instruction):
-
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -715,12 +726,12 @@ def execute_break(instruction):
         var: Variable = interpreter.get_global_frames().get(key)
         print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
     print("LF:")
-    if not(interpreter.get_frame_stack_top() is None):
+    if not (interpreter.get_frame_stack_top() is None):
         for key in interpreter.get_frame_stack_top().keys():
             var: Variable = interpreter.get_temporary_frame().get(key)
             print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
     print("TF:")
-    if not(interpreter.get_temporary_frame() is None):
+    if not (interpreter.get_temporary_frame() is None):
         for key in interpreter.get_temporary_frame().keys():
             var: Variable = interpreter.get_temporary_frame().get(key)
             print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
@@ -776,7 +787,7 @@ def execute_write(instruction):
 def execute_exit(instruction):
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
-    if not(0 <= int(symbol_value) <= 49):
+    if not (0 <= int(symbol_value) <= 49):
         close_script(WRONG_OPERAND_VALUE_ERROR)
     exit(int(symbol_value))
 
@@ -797,8 +808,8 @@ def execute_jumpifeq(instruction):
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
 
-    if not((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
-           and symbol_1_value == symbol_2_value):
+    if not ((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
+            and symbol_1_value == symbol_2_value):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     label = instruction.get_arguments()[0].get_value()
@@ -816,8 +827,8 @@ def execute_jumpifneq(instruction):
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
 
-    if not((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
-           and symbol_1_value != symbol_2_value):
+    if not ((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
+            and symbol_1_value != symbol_2_value):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     label = instruction.get_arguments()[0].get_value()
@@ -826,7 +837,6 @@ def execute_jumpifneq(instruction):
 
 
 def interpret_instructions():
-
     while interpreter.get_current_instruction_id() < len(instructions):
         instruction = instructions[interpreter.get_current_instruction_id()]
         opcode = instruction.get_opcode()
@@ -885,6 +895,7 @@ def interpret_instructions():
         elif opcode == "CALL":
             execute_call(instruction)
         elif opcode == "LABEL":
+            interpreter.increase_current_instruction()
             continue
         elif opcode == "JUMP":
             execute_jump(instruction)
@@ -900,11 +911,11 @@ def interpret_instructions():
             execute_jumpifeq(instruction)
         elif opcode == "JUMPIFNEQ":
             execute_jumpifneq(instruction)
+
         interpreter.increase_current_instruction()
 
 
 if __name__ == '__main__':
-
     input_path, source_path = process_arguments()
     tree = load_xml_file(source_path)
     check_xml_file(tree)
@@ -915,6 +926,3 @@ if __name__ == '__main__':
     interpreter.set_instructions_count(len(instructions))
     find_labels()
     interpret_instructions()
-
-
-
