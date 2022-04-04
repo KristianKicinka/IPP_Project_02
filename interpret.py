@@ -859,7 +859,8 @@ def execute_jumpifeq(instruction):
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
 
-    if not ((symbol_1_type == symbol_2_type or symbol_1_type == "nil" or symbol_2_type == "nil")
+    if not (symbol_1_type == symbol_2_type or
+            (symbol_1_type == "nil" and symbol_2_type != "nil") or (symbol_2_type == "nil" and symbol_1_type != "nil")
             and symbol_1_value == symbol_2_value):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
