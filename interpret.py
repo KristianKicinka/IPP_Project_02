@@ -90,6 +90,21 @@ class Interpreter:
         else:
             close_script(NOT_EXISTING_FRAME)
 
+    def frame_stack_pop(self):
+        if len(self.frame_stack) == 0:
+            close_script(NOT_EXISTING_FRAME)
+        return self.frame_stack.pop()
+
+    def call_stack_pop(self):
+        if len(self.call_stack) == 0:
+            close_script(NOT_EXISTING_FRAME)
+        return self.call_stack.pop()
+
+    def data_stack_pop(self):
+        if len(self.data_stack) == 0:
+            close_script(NOT_EXISTING_FRAME)
+        return self.data_stack.pop()
+
     def add_to_data_stack(self, data):
         self.data_stack.append(data)
 
@@ -275,9 +290,11 @@ def load_instructions(tmp_tree):
     for child_element in root:
         if not (child_element.attrib.get("opcode").upper() in defined_instructions):
             close_script(XML_STRUCTURE_ERROR)
-
-        order_number = int(child_element.attrib.get("order"))
-        if order_number <= 0:
+        try:
+            order_number = int(child_element.attrib.get("order"))
+            if order_number <= 0:
+                close_script(XML_STRUCTURE_ERROR)
+        except:
             close_script(XML_STRUCTURE_ERROR)
 
         instruction = Instruction(child_element.attrib.get("opcode").upper(), int(child_element.attrib.get("order")))
@@ -334,6 +351,11 @@ def find_labels():
                 close_script(SEMANTIC_ERROR)
             index = instructions.index(instruction)
             interpreter.add_to_labels(label, index)
+
+
+def check_labels(label):
+    if not(label in interpreter.get_labels().keys()):
+        close_script(SEMANTIC_ERROR)
 
 
 def get_variable(var_name, frame_type):
@@ -396,23 +418,29 @@ def process_aritmetic_operation(instruction, operation):
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
 
-    if symbol_1_type != "int" and symbol_2_type != "int":
+    if not(symbol_1_type == "int" and symbol_2_type == "int"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     symbol_1_value = return_symbol_data(symbol_1, "value")
     symbol_2_value = return_symbol_data(symbol_2, "value")
 
+    try:
+        symbol_1_value = int(symbol_1_value)
+        symbol_2_value = int(symbol_2_value)
+    except:
+        close_script(XML_STRUCTURE_ERROR)
+
     res = None
     if operation == "add":
-        res = int(symbol_1_value) + int(symbol_2_value)
+        res = symbol_1_value + symbol_2_value
     elif operation == "sub":
-        res = int(symbol_1_value) - int(symbol_2_value)
+        res = symbol_1_value - symbol_2_value
     elif operation == "mul":
-        res = int(symbol_1_value) * int(symbol_2_value)
+        res = symbol_1_value * symbol_2_value
     elif operation == "idiv":
-        if int(symbol_2_value) == 0:
+        if symbol_2_value == 0:
             close_script(WRONG_OPERAND_VALUE_ERROR)
-        res = int(symbol_1_value) // int(symbol_2_value)
+        res = symbol_1_value // symbol_2_value
 
     var_obj.set_value(res)
     var_obj.set_type("int")
@@ -433,11 +461,9 @@ def process_relation_operands(instruction, operation):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
     if operation == "eq" and not (
             (symbol_1_type == "nil" and (
-                    symbol_2_type == "int" or symbol_2_type == "bool" or symbol_2_type == "string"))
-            or
-            ((
-                     symbol_1_type == "int" or symbol_1_type == "bool" or symbol_1_type == "string") and symbol_2_type == "nil")
-    ):
+                    symbol_2_type == "int" or symbol_2_type == "bool" or symbol_2_type == "string")) or
+            ((symbol_1_type == "int" or symbol_1_type == "bool" or symbol_1_type == "string") and
+             symbol_2_type == "nil")):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     symbol_1_value = return_symbol_data(symbol_1, "value")
@@ -520,7 +546,7 @@ def execute_pops(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
-    value = interpreter.get_data_stack().pop()
+    value = interpreter.data_stack_pop()
 
     if type(value) == bool:
         var_obj.set_type("bool")
@@ -727,14 +753,14 @@ def execute_pushframe(instruction):
 
 
 def execute_popframe(instruction):
-    local_frame = interpreter.frame_stack.pop()
+    local_frame = interpreter.frame_stack_pop()
     interpreter.temporary_frame = local_frame
 
 
 def execute_return(instruction):
     if len(interpreter.get_call_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
-    position = interpreter.get_call_stack().pop()
+    position = interpreter.call_stack_pop()
     interpreter.current_instruction_id = position
 
 
@@ -764,12 +790,14 @@ def execute_call(instruction):
     position = interpreter.get_current_instruction_id() + 1
     interpreter.add_to_call_stack(position)
     label = instruction.get_arguments()[0].get_value()
+    check_labels(label)
     new_index = interpreter.get_labels().get(label)
     interpreter.current_instruction_id = new_index
 
 
 def execute_jump(instruction):
     label = instruction.get_arguments()[0].get_value()
+    check_labels(label)
     new_index = interpreter.get_labels().get(label)
     interpreter.current_instruction_id = new_index
 
@@ -836,6 +864,7 @@ def execute_jumpifeq(instruction):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     label = instruction.get_arguments()[0].get_value()
+    check_labels(label)
     new_index = interpreter.get_labels().get(label)
     interpreter.current_instruction_id = new_index
 
@@ -855,6 +884,7 @@ def execute_jumpifneq(instruction):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     label = instruction.get_arguments()[0].get_value()
+    check_labels(label)
     new_index = interpreter.get_labels().get(label)
     interpreter.current_instruction_id = new_index
 
