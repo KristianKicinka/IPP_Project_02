@@ -737,6 +737,7 @@ def execute_pushs(instruction):
 
 def execute_write(instruction):
     print("write")
+    # TODO Do write function
 
 
 def execute_exit(instruction):
