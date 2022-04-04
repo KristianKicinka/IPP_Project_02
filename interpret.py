@@ -435,7 +435,6 @@ def get_variable_name_and_frame_type(instruction):
 
 
 def execute_defvar(instruction):
-    print("defvar")
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj = Variable(var_name)
 
@@ -454,7 +453,6 @@ def execute_defvar(instruction):
 
 
 def execute_pops(instruction):
-    print("pops")
     if len(interpreter.get_data_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
 
@@ -476,7 +474,6 @@ def execute_pops(instruction):
 
 
 def execute_move(instruction):
-    print("move")
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -490,8 +487,6 @@ def execute_move(instruction):
 
 
 def execute_int2char(instruction):
-    print("int2char")
-
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -513,8 +508,6 @@ def execute_int2char(instruction):
 
 
 def execute_strlen(instruction):
-    print("strlen")
-
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -532,7 +525,6 @@ def execute_strlen(instruction):
 
 
 def execute_type(instruction):
-    print("type")
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -547,7 +539,6 @@ def execute_type(instruction):
 
 
 def execute_not(instruction):
-    print("not")
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -571,12 +562,15 @@ def execute_read(instruction):
 
 
 def execute_str2int(instruction):
-    print("str2int")
-    # TODO maybe check if symbol is string
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol: Argument = instruction.get_arguments()[1]
+    symbol_type = return_symbol_data(symbol, "type")
+
+    if symbol_type != "string":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
+
     symbol_val = return_symbol_data(symbol, "value")
 
     if len(symbol_val) > 1 or int(symbol_val) < 0 or int(symbol_val) > 65535:
@@ -588,7 +582,6 @@ def execute_str2int(instruction):
 
 
 def execute_concat(instruction):
-    print("concat")
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
@@ -611,13 +604,18 @@ def execute_concat(instruction):
 
 
 def execute_getchar(instruction):
-    print("getchar")
-    # TODO maybe check types of symbols 1(str) 2(int)
+
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+
+    if symbol_1_type != "string" and symbol_2_type != "int":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     string = return_symbol_data(symbol_1, "value")
     index = return_symbol_data(symbol_2, "value")
@@ -632,13 +630,18 @@ def execute_getchar(instruction):
 
 
 def execute_setchar(instruction):
-    # TODO maybe check types
-    print("setchar")
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
 
     symbol_1: Argument = instruction.get_arguments()[1]
     symbol_2: Argument = instruction.get_arguments()[2]
+
+    symbol_1_type = return_symbol_data(symbol_1, "type")
+    symbol_2_type = return_symbol_data(symbol_2, "type")
+    var_type = var_obj.get_type()
+
+    if var_type != "string" and symbol_1_type != "int" and symbol_2_type != "string":
+        close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     index = return_symbol_data(symbol_1, "value")
     string = return_symbol_data(symbol_2, "value")
@@ -655,25 +658,21 @@ def execute_setchar(instruction):
 
 
 def execute_createframe(instruction):
-    print("createframe")
     interpreter.create_temporary_frame()
 
 
 def execute_pushframe(instruction):
-    print("pushframe")
     tmp_frame = interpreter.get_temporary_frame()
     interpreter.add_to_frame_stack(tmp_frame)
     interpreter.temporary_frame = None
 
 
 def execute_popframe(instruction):
-    print("popframe")
     local_frame = interpreter.frame_stack.pop()
     interpreter.temporary_frame = local_frame
 
 
 def execute_return(instruction):
-    print("return")
     if len(interpreter.get_call_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
     position = interpreter.get_call_stack().pop()
@@ -681,7 +680,6 @@ def execute_return(instruction):
 
 
 def execute_break(instruction):
-    print("break")
     current_inst_id = interpreter.get_current_instruction_id()
     processed_instructions_count = current_inst_id - 1
     print(f"ID Spracovávanej inštrukcie : {current_inst_id}", file=sys.stderr)
@@ -704,7 +702,6 @@ def execute_break(instruction):
 
 
 def execute_call(instruction):
-    print("call")
     position = interpreter.get_current_instruction_id() + 1
     interpreter.add_to_call_stack(position)
     label = instruction.get_arguments()[0].get_value()
@@ -713,14 +710,12 @@ def execute_call(instruction):
 
 
 def execute_jump(instruction):
-    print("jump")
     label = instruction.get_arguments()[0].get_value()
     new_index = interpreter.get_labels().get(label)
     interpreter.current_instruction_id = new_index
 
 
 def execute_pushs(instruction):
-    print("pushs")
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
     symbol_type = return_symbol_data(symbol, "type")
@@ -741,7 +736,6 @@ def execute_write(instruction):
 
 
 def execute_exit(instruction):
-    print("exit")
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
     if not(0 <= int(symbol_value) <= 49):
@@ -750,14 +744,12 @@ def execute_exit(instruction):
 
 
 def execute_dprint(instruction):
-    print("dprint")
     symbol: Argument = instruction.get_arguments()[0]
     symbol_val = return_symbol_data(symbol, "value")
     print(symbol_val, file=sys.stderr)
 
 
 def execute_jumpifeq(instruction):
-    print("jumpifeq")
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
 
@@ -777,7 +769,6 @@ def execute_jumpifeq(instruction):
 
 
 def execute_jumpifneq(instruction):
-    print("jumpifneq")
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
 
