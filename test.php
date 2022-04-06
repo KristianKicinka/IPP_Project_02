@@ -6,7 +6,12 @@
  * @author Kristián Kičinka (xkicin02)
  */
 
+use JetBrains\PhpStorm\NoReturn;
+
 ini_set('display_errors','stderr');
+
+const ARG_ERROR = 10;
+const FILE_ERROR = 41;
 
 class Script {
     private bool $recursive = false;
@@ -75,12 +80,12 @@ class Script {
     }
 
     function set_parse_script_file($file_path){
-        $file = fopen($file_path, "r") or close_script(1);
+        $file = fopen($file_path, "r") or close_script(FILE_ERROR);
         $this->parse_script_file = $file;
     }
 
     function set_int_script_file($file_path){
-        $file = fopen($file_path, "r") or close_script(1);
+        $file = fopen($file_path, "r") or close_script(FILE_ERROR);
         $this->int_script_file = $file;
     }
 }
@@ -95,7 +100,14 @@ function main($argc, $argv){
 }
 
 function close_script($code){
-    echo "uff off\n";
+    switch ($code){
+        case ARG_ERROR:
+            echo "Arguments error!\n";
+            break;
+        case FILE_ERROR:
+            echo "File error!\n";
+            break;
+    }
     exit($code);
 }
 
