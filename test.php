@@ -12,6 +12,7 @@ ini_set('display_errors','stderr');
 
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
+const FILE_SEPARATOR = "/";
 
 class Script {
     private bool $recursive = false;
@@ -97,6 +98,7 @@ function main($argc, $argv){
     array_shift($argv);
     process_arguments($argc, $argv, $script);
     print $script->get_int_only().PHP_EOL;
+    print_r(scan_directory($script->get_directory_path(), $script));
 }
 
 function close_script($code){
@@ -149,5 +151,27 @@ function process_arguments($argc, $argv, $script){
     }else{
         close_script(10);
     }
+}
+
+function scan_directory($directory_path, $script){
+    $files_list = [];
+
+    $dir_content = scandir($directory_path);
+    foreach ($dir_content as $item){
+
+        if ($item == "." or $item == ".." or ""){
+            continue;
+        }
+        $file_path = $directory_path.FILE_SEPARATOR.$item;
+
+        if (is_dir($file_path)){
+            if ($script->get_recursive() == true){
+                array_push($files_list, ...scan_directory($file_path, $script));
+            }
+        }else{
+            $files_list[] = pathinfo($file_path);
+        }
+    }
+    return $files_list;
 }
 
