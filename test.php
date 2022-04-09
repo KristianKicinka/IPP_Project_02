@@ -91,6 +91,76 @@ class Script {
     }
 }
 
+class Test{
+
+    private $test_name;
+    private $test_path;
+
+    private bool $is_set_src;
+    private bool $is_set_out;
+    private bool $is_set_input;
+    private bool $is_set_rc;
+
+    public function __construct($test_name, $test_path){
+        $this->test_name = $test_name;
+        $this->test_path = $test_path;
+
+        $this->is_set_input = false;
+        $this->is_set_out = false;
+        $this->is_set_rc = false;
+        $this->is_set_src = false;
+    }
+
+    public function getTestName(){
+        return $this->test_name;
+    }
+
+    public function setTestName($test_name): void{
+        $this->test_name = $test_name;
+    }
+
+    public function getTestPath(){
+        return $this->test_path;
+    }
+
+    public function setTestPath($test_path): void{
+        $this->test_path = $test_path;
+    }
+
+    public function isIsSetSrc(): bool{
+        return $this->is_set_src;
+    }
+
+    public function setIsSetSrc(bool $is_set_src): void{
+        $this->is_set_src = $is_set_src;
+    }
+
+    public function isIsSetOut(): bool{
+        return $this->is_set_out;
+    }
+
+    public function setIsSetOut(bool $is_set_out): void{
+        $this->is_set_out = $is_set_out;
+    }
+
+    public function isIsSetInput(): bool{
+        return $this->is_set_input;
+    }
+
+    public function setIsSetInput(bool $is_set_input): void{
+        $this->is_set_input = $is_set_input;
+    }
+
+    public function isIsSetRc(): bool{
+        return $this->is_set_rc;
+    }
+
+    public function setIsSetRc(bool $is_set_rc): void{
+        $this->is_set_rc = $is_set_rc;
+    }
+
+}
+
 main($argc, $argv);
 
 function main($argc, $argv){
