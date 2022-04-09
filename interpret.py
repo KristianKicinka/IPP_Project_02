@@ -627,6 +627,7 @@ def execute_strlen(instruction):
     string_len = len(symbol_string)
 
     var_obj.set_value(string_len)
+    var_obj.set_type("int")
 
 
 def execute_type(instruction):
@@ -671,10 +672,13 @@ def execute_read(instruction):
 
     for line in input_file:
         line = line.rstrip("\n")
-        if (line == "true" or line == "true") and symbol_value == "bool":
+        if line.lower() == "true" and symbol_value == "bool":
             value = True
             break
-        elif (line == "false" or line == "False") and symbol_value == "bool":
+        elif line.lower() == "false" and symbol_value == "bool":
+            value = False
+            break
+        elif symbol_value == "bool":
             value = False
             break
         elif check_integer(line) and symbol_value == "int":
@@ -707,13 +711,14 @@ def execute_stri2int(instruction):
     if not(symbol_1_type == "string" and symbol_2_type == "int"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
-    if not((0 <= symbol_2_val <= len(symbol_1_val)-1) and (0 <= int(symbol_1_val[symbol_2_val]) <= 65535)):
+    if not(0 <= symbol_2_val <= len(symbol_1_val)-1):
         close_script(STRING_WORKING_ERROR)
-
-    res = ord(symbol_1_val[symbol_2_val])
-
-    var_obj.set_value(res)
-    var_obj.set_type("int")
+    try:
+        res = ord(symbol_1_val[symbol_2_val])
+        var_obj.set_value(res)
+        var_obj.set_type("int")
+    except:
+        close_script(STRING_WORKING_ERROR)
 
 
 def execute_concat(instruction):
@@ -773,22 +778,22 @@ def execute_setchar(instruction):
     index = return_symbol_data(symbol_1, "value")
     string = return_symbol_data(symbol_2, "value")
 
-    print(string)
-
     symbol_1_type = return_symbol_data(symbol_1, "type")
     symbol_2_type = return_symbol_data(symbol_2, "type")
     var_type = var_obj.get_type()
+
+    if var_type is None:
+        close_script(MISSING_VALUE_ERROR)
 
     if not(var_type == "string" and symbol_1_type == "int" and symbol_2_type == "string"):
         close_script(WRONG_OPERANDS_TYPES_ERROR)
 
     var_str = var_obj.get_value()
-    print(var_str)
 
     if index < 0 or index > len(var_str)-1 or len(string) == 0:
         close_script(STRING_WORKING_ERROR)
 
-    res = var_str[:index] + string[0] + var_str[index:]
+    res = var_str[:index] + string[0] + var_str[index+1:]
 
     var_obj.set_value(res)
     var_obj.set_type("string")
