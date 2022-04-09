@@ -97,72 +97,78 @@ class Test{
     private String $test_directory_path;
     private String $test_file_path;
 
-    private bool $is_set_src;
-    private bool $is_set_out;
-    private bool $is_set_input;
-    private bool $is_set_rc;
+    private bool $src_file;
+    private bool $out_file;
+    private bool $in_file;
+    private bool $rc_file;
 
     public function __construct($test_name, $test_directory_path, $test_file_path){
         $this->test_name = $test_name;
         $this->test_directory_path = $test_directory_path;
         $this->test_file_path = $test_file_path;
+
+        $this->src_file = false;
+        $this->out_file = false;
+        $this->in_file = false;
+        $this->rc_file = false;
     }
 
-    public function getTestName(): string{
+    public function getTestName(): string {
         return $this->test_name;
     }
 
-    public function setTestName($test_name): void{
+    public function setTestName(string $test_name): void {
         $this->test_name = $test_name;
     }
 
-    public function getTestDirectoryPath(): string{
+    public function getTestDirectoryPath(): string {
         return $this->test_directory_path;
     }
 
-    public function setTestDirectoryPath($test_directory_path): void{
+    public function setTestDirectoryPath(string $test_directory_path): void {
         $this->test_directory_path = $test_directory_path;
     }
 
-    public function getTestFilePath(): string{
+    public function getTestFilePath(): string {
         return $this->test_file_path;
     }
 
-    public function setTestFilePath($test_file_path): void{
+    public function setTestFilePath(string $test_file_path): void {
         $this->test_file_path = $test_file_path;
     }
 
-    public function isIsSetSrc(): bool{
-        return $this->is_set_src;
+    public function isSrcFile(): bool {
+        return $this->src_file;
     }
 
-    public function setIsSetSrc(bool $is_set_src): void{
-        $this->is_set_src = $is_set_src;
+    public function setSrcFile(bool $src_file): void {
+        $this->src_file = $src_file;
     }
 
-    public function isIsSetOut(): bool{
-        return $this->is_set_out;
+    public function isOutFile(): bool {
+        return $this->out_file;
     }
 
-    public function setIsSetOut(bool $is_set_out): void{
-        $this->is_set_out = $is_set_out;
+    public function setOutFile(bool $out_file): void {
+        $this->out_file = $out_file;
     }
 
-    public function isIsSetInput(): bool{
-        return $this->is_set_input;
+    public function isInFile(): bool {
+        return $this->in_file;
     }
 
-    public function setIsSetInput(bool $is_set_input): void{
-        $this->is_set_input = $is_set_input;
+    public function setInFile(bool $in_file): void {
+        $this->in_file = $in_file;
     }
 
-    public function isIsSetRc(): bool{
-        return $this->is_set_rc;
+    public function isRcFile(): bool {
+        return $this->rc_file;
     }
 
-    public function setIsSetRc(bool $is_set_rc): void{
-        $this->is_set_rc = $is_set_rc;
+    public function setRcFile(bool $rc_file): void {
+        $this->rc_file = $rc_file;
     }
+
 }
 
 main($argc, $argv);
@@ -257,21 +263,46 @@ function load_tests($script){
 
     foreach ($test_files_list as $test_file){
         $name  = $test_file["filename"];
-        $path = $test_file["dirname"];
+        $directory_path = $test_file["dirname"];
+        $file_path = $directory_path.FILE_SEPARATOR.$name;
+        $extension = $test_file["extension"];
+
+        if (!in_array($extension,["src","in","out","rc"])){
+            continue;
+        }
+
+        if (!array_key_exists($file_path, $tests_list)){
+            $tests_list[$file_path] = new Test($name, $directory_path, $file_path);
+        }
+
+        switch ($extension){
+            case "src":
+                $tests_list[$file_path]->setIsSetSrc(true);
+                break;
+            case "in":
+                $tests_list[$file_path]->setIsSetInput(true);
+                break;
+            case "out":
+                $tests_list[$file_path]->setIsSetOut(true);
+                break;
+            case "rc":
+                $tests_list[$file_path]->setIsSetRc(true);
+                break;
+        }
 
     }
 
 }
 
-function process_extensions($extensions, $filename){
-    if (!in_array("src",$extensions)){
-        close_script(FILE_ERROR);
-    }elseif (!in_array("out",$extensions)){
-        file_put_contents($filename."out",'');
-    }elseif (!in_array("in",$extensions)){
-        file_put_contents($filename."in",'');
-    }elseif (!in_array("rc",$extensions)){
-        file_put_contents($filename."rc",0);
+function process_extensions($tests){
+    foreach ($tests as $test){
+        if (!$test->getIsSetSrc()){
+            close_script(FILE_ERROR);
+        }elseif (!$test->getIsSetInput()){
+            file_put_contents($test->getTestName()."in",'');
+        }elseif (!$test->getIsSetOut()){
+            file_put_contents($test->getTestName()."out",'');
+        }
     }
 }
 
