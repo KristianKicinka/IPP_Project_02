@@ -93,21 +93,22 @@ class Script {
 
 class Test{
 
-    private $test_name;
-    private $test_path;
+    private String $test_name;
+    private String $test_directory_path;
+    private String $test_file_path;
 
     private bool $is_set_src;
     private bool $is_set_out;
     private bool $is_set_input;
     private bool $is_set_rc;
 
-    public function __construct($test_name, $test_path){
+    public function __construct($test_name, $test_directory_path, $test_file_path){
         $this->test_name = $test_name;
-        $this->test_path = $test_path;
-
+        $this->test_directory_path = $test_directory_path;
+        $this->test_file_path = $test_file_path;
     }
 
-    public function getTestName(){
+    public function getTestName(): string{
         return $this->test_name;
     }
 
@@ -115,14 +116,53 @@ class Test{
         $this->test_name = $test_name;
     }
 
-    public function getTestPath(){
-        return $this->test_path;
+    public function getTestDirectoryPath(): string{
+        return $this->test_directory_path;
     }
 
-    public function setTestPath($test_path): void{
-        $this->test_path = $test_path;
+    public function setTestDirectoryPath($test_directory_path): void{
+        $this->test_directory_path = $test_directory_path;
     }
 
+    public function getTestFilePath(): string{
+        return $this->test_file_path;
+    }
+
+    public function setTestFilePath($test_file_path): void{
+        $this->test_file_path = $test_file_path;
+    }
+
+    public function isIsSetSrc(): bool{
+        return $this->is_set_src;
+    }
+
+    public function setIsSetSrc(bool $is_set_src): void{
+        $this->is_set_src = $is_set_src;
+    }
+
+    public function isIsSetOut(): bool{
+        return $this->is_set_out;
+    }
+
+    public function setIsSetOut(bool $is_set_out): void{
+        $this->is_set_out = $is_set_out;
+    }
+
+    public function isIsSetInput(): bool{
+        return $this->is_set_input;
+    }
+
+    public function setIsSetInput(bool $is_set_input): void{
+        $this->is_set_input = $is_set_input;
+    }
+
+    public function isIsSetRc(): bool{
+        return $this->is_set_rc;
+    }
+
+    public function setIsSetRc(bool $is_set_rc): void{
+        $this->is_set_rc = $is_set_rc;
+    }
 }
 
 main($argc, $argv);
@@ -207,5 +247,31 @@ function scan_directory($directory_path, $script){
         }
     }
     return $files_list;
+}
+
+function load_tests($script){
+
+    $directory_path = $script->get_directory_path();
+    $tests_list = [];
+    $test_files_list = scan_directory($directory_path, $script);
+
+    foreach ($test_files_list as $test_file){
+        $name  = $test_file["filename"];
+        $path = $test_file["dirname"];
+
+    }
+
+}
+
+function process_extensions($extensions, $filename){
+    if (!in_array("src",$extensions)){
+        close_script(FILE_ERROR);
+    }elseif (!in_array("out",$extensions)){
+        file_put_contents($filename."out",'');
+    }elseif (!in_array("in",$extensions)){
+        file_put_contents($filename."in",'');
+    }elseif (!in_array("rc",$extensions)){
+        file_put_contents($filename."rc",0);
+    }
 }
 
