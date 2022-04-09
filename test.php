@@ -177,8 +177,8 @@ function main($argc, $argv){
     $script = new Script();
     array_shift($argv);
     process_arguments($argc, $argv, $script);
-    print $script->get_int_only().PHP_EOL;
-    print_r(scan_directory($script->get_directory_path(), $script));
+    $tests = load_tests($script);
+    process_extensions($tests);
 }
 
 function close_script($code){
@@ -277,31 +277,39 @@ function load_tests($script){
 
         switch ($extension){
             case "src":
-                $tests_list[$file_path]->setIsSetSrc(true);
+                $tests_list[$file_path]->setSrcFile(true);
                 break;
             case "in":
-                $tests_list[$file_path]->setIsSetInput(true);
+                $tests_list[$file_path]->setInFile(true);
                 break;
             case "out":
-                $tests_list[$file_path]->setIsSetOut(true);
+                $tests_list[$file_path]->setOutFile(true);
                 break;
             case "rc":
-                $tests_list[$file_path]->setIsSetRc(true);
+                $tests_list[$file_path]->setRcFile(true);
                 break;
         }
 
     }
 
+    return $tests_list;
+
 }
 
 function process_extensions($tests){
     foreach ($tests as $test){
-        if (!$test->getIsSetSrc()){
+
+        if (!$test->isSrcFile()){
             close_script(FILE_ERROR);
-        }elseif (!$test->getIsSetInput()){
-            file_put_contents($test->getTestName()."in",'');
-        }elseif (!$test->getIsSetOut()){
-            file_put_contents($test->getTestName()."out",'');
+        }
+        if (!$test->isInFile()){
+            file_put_contents($test->getTestFilePath().".in",'');
+        }
+        if (!$test->isOutFile()){
+            file_put_contents($test->getTestFilePath().".out",'');
+        }
+        if (!$test->isRcFile()){
+            file_put_contents($test->getTestFilePath().".rc",0);
         }
     }
 }
