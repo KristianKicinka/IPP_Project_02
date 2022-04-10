@@ -209,11 +209,9 @@ function process_parse_test($test, $script): TestProcess
     @unlink("diffs.xml");
 
     if ($returned_code_cmp != 0){
-        $test_process->setSameOutput(false);
         $test_process->setTestPassed(false);
         $script->incFailedTestCount();
     }else{
-        $test_process->setSameOutput(true);
         $test_process->setTestPassed(true);
         $script->incPassedTestCount();
     }
@@ -259,11 +257,9 @@ function process_interpret_test($test, $script): TestProcess {
     exec($diff_exec, $output, $returned_code_cmp);
 
     if ($returned_code_cmp != 0){
-        $test_process->setSameOutput(false);
         $test_process->setTestPassed(false);
         $script->incFailedTestCount();
     }else{
-        $test_process->setSameOutput(true);
         $test_process->setTestPassed(true);
         $script->incPassedTestCount();
     }
@@ -320,11 +316,9 @@ function process_both_test($test, $script): TestProcess {
     exec($diff_exec, $output, $returned_code_cmp);
 
     if ($returned_code_cmp != 0){
-        $test_process->setSameOutput(false);
         $test_process->setTestPassed(false);
         $script->incFailedTestCount();
     }else{
-        $test_process->setSameOutput(true);
         $test_process->setTestPassed(true);
         $script->incPassedTestCount();
     }

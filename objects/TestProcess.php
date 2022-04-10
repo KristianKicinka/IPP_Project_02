@@ -12,7 +12,6 @@ class TestProcess
     private String $tmp_out_file_path;
     private String $tmp_err_file_path;
 
-    private bool $same_output;
     private bool $test_passed;
 
     /**
@@ -137,22 +136,6 @@ class TestProcess
     public function setTmpErrFilePath(string $tmp_err_file_path): void
     {
         $this->tmp_err_file_path = $tmp_err_file_path;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSameOutput(): bool
-    {
-        return $this->same_output;
-    }
-
-    /**
-     * @param bool $same_output
-     */
-    public function setSameOutput(bool $same_output): void
-    {
-        $this->same_output = $same_output;
     }
 
     /**
