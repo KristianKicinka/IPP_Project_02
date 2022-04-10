@@ -83,7 +83,7 @@ function process_arguments($argc, $argv, $script){
     }
 }
 
-function scan_directory($directory_path, $script){
+function scan_directory($directory_path, $script): array {
     $files_list = [];
 
     $dir_content = scandir($directory_path);
@@ -107,7 +107,7 @@ function scan_directory($directory_path, $script){
     return $files_list;
 }
 
-function load_tests($script){
+function load_tests($script): array {
 
     $directory_path = $script->getDirectoryPath();
     $tests_list = [];
@@ -167,13 +167,13 @@ function process_extensions($tests){
     }
 }
 
-function load_rc_number($test){
+function load_rc_number($test): bool|string {
     $rc_file = $test->getTestFilePath().".rc";
-    $rc = file_get_contents($rc_file);
-    return $rc;
+    return file_get_contents($rc_file);
 }
 
-function process_parse_test($test, $script){
+function process_parse_test($test, $script): TestProcess
+{
     $process_name = $test->getTestName();
     $process_type = "parse";
 
@@ -221,7 +221,7 @@ function process_parse_test($test, $script){
     return $test_process;
 }
 
-function process_interpret_test($test, $script){
+function process_interpret_test($test, $script): TestProcess {
 
     $process_name = $test->getTestName();
     $process_type = "interpret";
@@ -272,7 +272,7 @@ function process_interpret_test($test, $script){
 
 }
 
-function process_both_test($test, $script){
+function process_both_test($test, $script): TestProcess {
     $process_name = $test->getTestName();
     $process_type = "both";
 
