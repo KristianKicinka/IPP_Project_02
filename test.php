@@ -6,14 +6,12 @@
  * @author Kristián Kičinka (xkicin02)
  */
 
-use JetBrains\PhpStorm\NoReturn;
-
 ini_set('display_errors','stderr');
 
-require_once("Script.php");
-require_once("TestObject.php");
-require_once("TestProcess.php");
-require_once("Output.php");
+require_once("objects/Script.php");
+require_once("objects/TestObject.php");
+require_once("objects/TestProcess.php");
+require_once("objects/Output.php");
 
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
