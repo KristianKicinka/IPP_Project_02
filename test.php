@@ -303,6 +303,6 @@ function testing($tests, $script){
     }
 
     $script->setPercentage();
-    (new Output)->generateTemplate($script);
+    (new Output)->generateTemplate($script, $parse_tests, $interpret_tests);
 }
 

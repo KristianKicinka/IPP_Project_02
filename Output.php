@@ -4,7 +4,7 @@ class Output{
     private String $title = "IPP 2022 Tests";
 
 
-    function generateTemplate($script){
+    function generateTemplate($script, $parse_tests, $interpret_tests){
        echo "<!DOCTYPE html>".PHP_EOL;
        echo "<html lang='en'>".PHP_EOL;
        echo "<head>
@@ -20,8 +20,14 @@ class Output{
                         <a href='#' class='navbar-brand d-flex align-items-center'>".$this->title."</a>    
                     </div>
                  </div>".PHP_EOL;
-       echo "    <div class='container pt-sm-4'>".PHP_EOL;
+       echo "    <div class='container pt-sm-4 pb-sm-4'>".PHP_EOL;
             Output::generate_subheader($script);
+            foreach ($parse_tests as $test){
+                Output::generate_test($test);
+            }
+            foreach ($interpret_tests as $test){
+                Output::generate_test($test);
+            }
        echo "    </div>".PHP_EOL;
        echo "</body>".PHP_EOL;
        echo "</html>".PHP_EOL;
@@ -30,9 +36,9 @@ class Output{
 
     static function generate_subheader($script){
         echo "
-            <div class='row'>
+            <div class='row pb-sm-4'>
                 <div class='col-sm-6'>
-                    <div class='card'>
+                    <div class='card h-100'>
                         <h5 class='card-header'>Testing Configuration</h5>
                         <div class='card-body'>
                             <p class='card-text'><b>Testing directory</b> : ".$script->getDirectoryPath()."</p>
@@ -47,7 +53,7 @@ class Output{
                     </div>
                 </div>
                 <div class='col-sm-6'>
-                    <div class='card'>
+                    <div class='card h-100'>
                         <h5 class='card-header'>Testing results</h5>
                         <div class='card-body'>
                             <div class='row'>
@@ -64,6 +70,33 @@ class Output{
                     </div>
                 </div>
             </div>
+        ".PHP_EOL;
+    }
+
+    static function generate_test($test){
+        echo "
+        <div class='row pt-2'>
+            <div class='col'>
+                <div class='card'>
+                    <div class='card-header text-white ".($test->isTestPassed() ? "bg-success" : "bg-danger")."'>
+                        <h6 style='float: left; padding-right: 2%'><b>Test name</b> : ".$test->getName()."</h6>
+                        <h6 style='float: left; padding-right: 2%'><b>Test type</b> : ".$test->getType()."</h6>
+                    </div>
+                    <div class='row'>
+                        <div class='col'>
+                            <div class='card-body border border-top-0 border-secondary'>
+                             ".PHP_EOL;
+                            if ($test->isTestPassed()){
+                                echo "<p class='text-dark'>Test passed !</p>".PHP_EOL;
+                            }else{
+                                echo "<p class='text-dark'>Test failed !</p>".PHP_EOL;
+                            }
+        echo "              </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         ".PHP_EOL;
     }
 
