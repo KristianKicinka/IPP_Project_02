@@ -12,6 +12,8 @@ ini_set('display_errors','stderr');
 
 require_once("Script.php");
 require_once("TestObject.php");
+require_once("TestProcess.php");
+require_once("Output.php");
 
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
@@ -25,7 +27,7 @@ function main($argc, $argv){
     process_arguments($argc, $argv, $script);
     $tests = load_tests($script);
     process_extensions($tests);
-    testing($script);
+    testing($tests, $script);
 }
 
 function close_script($code){
@@ -162,22 +164,145 @@ function process_extensions($tests){
     }
 }
 
-function process_parse_tests(){
-    echo "Parse tests\n";
+function load_rc_number($test){
+    $rc_file = $test->getTestFilePath().".rc";
+    $rc = file_get_contents($rc_file);
+    return $rc;
 }
 
-function process_interpret_tests(){
-    echo "Interpret tests\n";
+function process_parse_test($test, $script){
+    $process_name = $test->getTestName();
+    $process_type = "parse";
+
+    $src_file = $test->getTestFilePath().".src";
+    $out_file = $test->getTestFilePath().".tmp_parse_out";
+    $err_file = $test->getTestFilePath().".tmp_parse_err";
+
+    $test_process = new TestProcess($process_type, $process_name, $src_file);
+    $test_process->setTmpErrFilePath($err_file);
+    $test_process->setTmpOutFilePath($out_file);
+
+    $php_command = "php ".$script->getParseScriptFile()." <".$src_file." 2>".$err_file." 1>".$out_file;
+
+    exec($php_command, $output, $returned_code);
+
+    $test_process->setExpectedExitCode(load_rc_number($test));
+    $test_process->setReturnedExitCode($returned_code);
+
+    if ($returned_code != 0){
+
+        if ($returned_code == $test_process->getExpectedExitCode()){
+            $test_process->setTestPassed(true);
+            $script->incPassedTestCount();
+        }
+        else{
+            $test_process->setTestPassed(false);
+            $script->incFailedTestCount();
+        }
+
+        return $test_process;
+    }
+
+    $expected_out = $test->getTestFilePath().".out";
+    $jexam_jar = $script->getJexamPath().FILE_SEPARATOR."jexamxml.jar";
+    $jexam_options = $script->getJexamPath().FILE_SEPARATOR."options";
+    $jexam_exec = "java -jar ".$jexam_jar." ".$out_file." ".$expected_out." diffs.xml  /D ".$jexam_options;
+
+    exec($jexam_exec, $output, $returned_code_cmp);
+    @unlink("diffs.xml");
+
+    if ($returned_code_cmp != 0){
+        $test_process->setSameOutput(false);
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
+    }else{
+        $test_process->setSameOutput(true);
+        $test_process->setTestPassed(true);
+        $script->incPassedTestCount();
+    }
+
+    return $test_process;
 }
 
-function testing($script){
+function process_interpret_test($test, $script, $parse_tests, $key){
 
-    if ($script->isParseTests()){
-        process_parse_tests();
-    }
-    if ($script->isIntTests()){
-        process_interpret_tests();
+    $process_name = $test->getTestName();
+    $process_type = "interpret";
+
+    if (!array_key_exists($key, $parse_tests)){
+        $src_file = $test->getTestFilePath().".src";
+    }else{
+        $src_file = $parse_tests[$key]->getTmpOutFilePath();
     }
 
+    $out_file = $test->getTestFilePath().".tmp_int_out";
+    $err_file = $test->getTestFilePath().".tmp_int_err";
+    $input_file = $test->getTestFilePath().".in";
+    $out_int_file = $test->getTestFilePath().".out";
+
+    $test_process = new TestProcess($process_type, $process_name, $src_file);
+
+    $test_process->setTmpOutFilePath($out_file);
+    $test_process->setTmpErrFilePath($err_file);
+
+    $python_exec = "python3 ".$script->getIntScriptFile()." --source=".$src_file.
+                    " <".$input_file." 2>".$err_file." 1>".$out_file;
+
+    exec($python_exec, $output, $returned_code);
+
+    $test_process->setExpectedExitCode(load_rc_number($test));
+    $test_process->setReturnedExitCode($returned_code);
+
+    if ($returned_code != 0){
+
+        if ($returned_code == $test_process->getExpectedExitCode()){
+            $test_process->setTestPassed(true);
+            $script->incPassedTestCount();
+        }
+        else{
+            $test_process->setTestPassed(false);
+            $script->incFailedTestCount();
+        }
+
+        return $test_process;
+    }
+
+    $diff_exec = "diff ".$out_int_file." ".$out_file;
+    exec($diff_exec, $output, $returned_code_cmp);
+
+    if ($returned_code_cmp != 0){
+        $test_process->setSameOutput(false);
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
+    }else{
+        $test_process->setSameOutput(true);
+        $test_process->setTestPassed(true);
+        $script->incPassedTestCount();
+    }
+
+    return $test_process;
+
+}
+
+function testing($tests, $script){
+    $parse_tests = [];
+    $interpret_tests = [];
+
+    foreach ($tests as $test){
+        $key = $test->getTestFilePath();
+        if ($script->isParseTests()){
+
+            $parse_tests[$key] = process_parse_test($test, $script);
+            $script->incTotalTestCount();
+
+        }
+        if ($script->isIntTests()){
+            $interpret_tests[$key] = process_interpret_test($test, $script, $parse_tests, $key);
+            $script->incTotalTestCount();
+        }
+    }
+
+    $script->setPercentage();
+    (new Output)->generateTemplate($script);
 }
 

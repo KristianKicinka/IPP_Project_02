@@ -7,10 +7,51 @@ class Script{
     private bool $int_tests = true;
     private bool $noclean = false;
 
-    private $directory_path = null;
-    private $jexam_path = null;
-    private $parse_script_file = null;
-    private $int_script_file = null;
+    private $directory_path;
+    private $jexam_path;
+    private $parse_script_file;
+    private $int_script_file;
+
+    private int $total_test_count;
+    private int $passed_test_count;
+    private int $failed_test_count;
+    private int $percentage;
+
+    public function __construct(){
+        $this->directory_path = getcwd();
+        $this->jexam_path = "/pub/courses/ipp/jexamxml/";
+        $this->parse_script_file = getcwd().FILE_SEPARATOR."parse.php";
+        $this->int_script_file = getcwd().FILE_SEPARATOR."interpret.py";
+        $this->total_test_count = -1;
+        $this->percentage = 0;
+        $this->failed_test_count = -1;
+        $this->passed_test_count = -1;
+
+    }
+
+    public function incTotalTestCount(){
+        $this->total_test_count++;
+    }
+
+    public function incPassedTestCount(){
+        $this->passed_test_count++;
+    }
+
+    public function incFailedTestCount(){
+        $this->failed_test_count++;
+    }
+
+    public function setPercentage(){
+        $this->percentage = intval(($this->passed_test_count/$this->total_test_count)*100);
+    }
+
+    public function getPercentage(){
+        return $this->percentage;
+    }
+
+    public function getFailedTestsCount(){
+        return $this->failed_test_count;
+    }
 
     /**
      * @return bool
@@ -121,8 +162,7 @@ class Script{
      */
     public function setParseScriptFile($parse_script_file): void
     {
-        $file = fopen($parse_script_file, "r") or close_script(FILE_ERROR);
-        $this->parse_script_file = $file;
+        $this->parse_script_file = $parse_script_file;
     }
 
     /**
@@ -138,8 +178,55 @@ class Script{
      */
     public function setIntScriptFile($int_script_file): void
     {
-        $file = fopen($int_script_file, "r") or close_script(FILE_ERROR);
-        $this->int_script_file = $file;
+        $this->int_script_file = $int_script_file;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotalTestCount(): int
+    {
+        return $this->total_test_count;
+    }
+
+    /**
+     * @param int $total_test_count
+     */
+    public function setTotalTestCount(int $total_test_count): void
+    {
+        $this->total_test_count = $total_test_count;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPassedTestCount(): int
+    {
+        return $this->passed_test_count;
+    }
+
+    /**
+     * @param int $passed_test_count
+     */
+    public function setPassedTestCount(int $passed_test_count): void
+    {
+        $this->passed_test_count = $passed_test_count;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFailedTestCount(): int
+    {
+        return $this->failed_test_count;
+    }
+
+    /**
+     * @param int $failed_test_count
+     */
+    public function setFailedTestCount(int $failed_test_count): void
+    {
+        $this->failed_test_count = $failed_test_count;
     }
 
 
