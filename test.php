@@ -87,11 +87,13 @@ function scan_directory($directory_path, $script){
     $files_list = [];
 
     $dir_content = scandir($directory_path);
+
     foreach ($dir_content as $item){
 
         if ($item == "." or $item == ".." or ""){
             continue;
         }
+
         $file_path = $directory_path.FILE_SEPARATOR.$item;
 
         if (is_dir($file_path)){
@@ -149,18 +151,18 @@ function load_tests($script){
 function process_extensions($tests){
     foreach ($tests as $test){
 
-        if (!$test->isSrcFile()){
-            close_script(FILE_ERROR);
+        if ($test->isSrcFile()){
+            if (!$test->isInFile()){
+                file_put_contents($test->getTestFilePath().".in",'');
+            }
+            if (!$test->isOutFile()){
+                file_put_contents($test->getTestFilePath().".out",'');
+            }
+            if (!$test->isRcFile()){
+                file_put_contents($test->getTestFilePath().".rc",'0');
+            }
         }
-        if (!$test->isInFile()){
-            file_put_contents($test->getTestFilePath().".in",'');
-        }
-        if (!$test->isOutFile()){
-            file_put_contents($test->getTestFilePath().".out",'');
-        }
-        if (!$test->isRcFile()){
-            file_put_contents($test->getTestFilePath().".rc",'0');
-        }
+
     }
 }
 
@@ -295,8 +297,7 @@ function testing($tests, $script){
             $parse_tests[$key] = process_parse_test($test, $script);
             $script->incTotalTestCount();
 
-        }
-        if ($script->isIntTests()){
+        }elseif ($script->isIntTests()){
             $interpret_tests[$key] = process_interpret_test($test, $script, $parse_tests, $key);
             $script->incTotalTestCount();
         }

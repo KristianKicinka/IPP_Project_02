@@ -79,8 +79,8 @@ class Output{
             <div class='col'>
                 <div class='card'>
                     <div class='card-header text-white ".($test->isTestPassed() ? "bg-success" : "bg-danger")."'>
-                        <h6 style='float: left; padding-right: 2%'><b>Test name</b> : ".$test->getName()."</h6>
-                        <h6 style='float: left; padding-right: 2%'><b>Test type</b> : ".$test->getType()."</h6>
+                        <i style='float: left; padding-right: 2%'><b>Test name</b> : ".$test->getName()."</i>
+                        <i style='float: left; padding-right: 2%'><b>Test type</b> : ".$test->getType()."</i>
                     </div>
                     <div class='row'>
                         <div class='col'>

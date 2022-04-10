@@ -22,10 +22,10 @@ class Script{
         $this->jexam_path = "/pub/courses/ipp/jexamxml/";
         $this->parse_script_file = getcwd().FILE_SEPARATOR."parse.php";
         $this->int_script_file = getcwd().FILE_SEPARATOR."interpret.py";
-        $this->total_test_count = -1;
+        $this->total_test_count = 0;
         $this->percentage = 0;
-        $this->failed_test_count = -1;
-        $this->passed_test_count = -1;
+        $this->failed_test_count = 0;
+        $this->passed_test_count = 0;
 
     }
 
