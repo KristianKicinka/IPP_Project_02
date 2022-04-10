@@ -4,7 +4,7 @@ class Output{
     private String $title = "IPP 2022 Tests";
 
 
-    function generateTemplate($script, $parse_tests, $interpret_tests){
+    function generateTemplate($script, $tests){
        echo "<!DOCTYPE html>".PHP_EOL;
        echo "<html lang='en'>".PHP_EOL;
        echo "<head>
@@ -22,10 +22,7 @@ class Output{
                  </div>".PHP_EOL;
        echo "    <div class='container pt-sm-4 pb-sm-4'>".PHP_EOL;
             Output::generate_subheader($script);
-            foreach ($parse_tests as $test){
-                Output::generate_test($test);
-            }
-            foreach ($interpret_tests as $test){
+            foreach ($tests as $test){
                 Output::generate_test($test);
             }
        echo "    </div>".PHP_EOL;
@@ -63,7 +60,7 @@ class Output{
                                 </div>
                                 <div class='col-sm-6'>
                                     <p class='card-text'><b>Percentage :</b></p>
-                                    <h1>".$script->getPercentage()."</h1>
+                                    <h1>".$script->getPercentage()." %</h1>
                                 </div>
                             </div>
                         </div>
@@ -90,6 +87,16 @@ class Output{
                                 echo "<p class='text-dark'>Test passed !</p>".PHP_EOL;
                             }else{
                                 echo "<p class='text-dark'>Test failed !</p>".PHP_EOL;
+                                if ($test->getExpectedExitCode() != $test->getReturnedExitCode()){
+                                    echo "<p class='text-dark'>Expected exit code : ".$test->getExpectedExitCode()."</p>".PHP_EOL;
+                                    echo "<p class='text-dark'>Returned exit code : ".$test->getReturnedExitCode()."</p>".PHP_EOL;
+                                }else{
+                                    echo "<p class='text-dark'>Different output :</p>".PHP_EOL;
+                                    $ret_out = file_get_contents($test->getTmpOutFilePath());
+                                    $correct_out = file_get_contents($test->getTestingFile().".out");
+                                    echo "<p class='text-dark'>Expected output : ".$correct_out."</p>".PHP_EOL;
+                                    echo "<p class='text-dark'>Returned output : ".$ret_out."</p>".PHP_EOL;
+                                }
                             }
         echo "              </div>
                         </div>

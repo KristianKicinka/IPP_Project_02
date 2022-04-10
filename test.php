@@ -113,6 +113,7 @@ function load_tests($script){
     $tests_list = [];
     $test_files_list = scan_directory($directory_path, $script);
 
+
     foreach ($test_files_list as $test_file){
         $name  = $test_file["filename"];
         $directory_path = $test_file["dirname"];
@@ -191,16 +192,10 @@ function process_parse_test($test, $script){
     $test_process->setExpectedExitCode(load_rc_number($test));
     $test_process->setReturnedExitCode($returned_code);
 
-    if ($returned_code != 0){
+    if ($returned_code != $test_process->getExpectedExitCode()){
 
-        if ($returned_code == $test_process->getExpectedExitCode()){
-            $test_process->setTestPassed(true);
-            $script->incPassedTestCount();
-        }
-        else{
-            $test_process->setTestPassed(false);
-            $script->incFailedTestCount();
-        }
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
 
         return $test_process;
     }
@@ -226,16 +221,13 @@ function process_parse_test($test, $script){
     return $test_process;
 }
 
-function process_interpret_test($test, $script, $parse_tests, $key){
+function process_interpret_test($test, $script){
 
     $process_name = $test->getTestName();
     $process_type = "interpret";
 
-    if (!array_key_exists($key, $parse_tests)){
-        $src_file = $test->getTestFilePath().".src";
-    }else{
-        $src_file = $parse_tests[$key]->getTmpOutFilePath();
-    }
+    $src_file = $test->getTestFilePath().".src";
+
 
     $out_file = $test->getTestFilePath().".tmp_int_out";
     $err_file = $test->getTestFilePath().".tmp_int_err";
@@ -255,16 +247,71 @@ function process_interpret_test($test, $script, $parse_tests, $key){
     $test_process->setExpectedExitCode(load_rc_number($test));
     $test_process->setReturnedExitCode($returned_code);
 
-    if ($returned_code != 0){
+    if ($returned_code != $test_process->getExpectedExitCode()){
 
-        if ($returned_code == $test_process->getExpectedExitCode()){
-            $test_process->setTestPassed(true);
-            $script->incPassedTestCount();
-        }
-        else{
-            $test_process->setTestPassed(false);
-            $script->incFailedTestCount();
-        }
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
+
+        return $test_process;
+    }
+
+    $diff_exec = "diff ".$out_int_file." ".$out_file;
+    exec($diff_exec, $output, $returned_code_cmp);
+
+    if ($returned_code_cmp != 0){
+        $test_process->setSameOutput(false);
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
+    }else{
+        $test_process->setSameOutput(true);
+        $test_process->setTestPassed(true);
+        $script->incPassedTestCount();
+    }
+
+    return $test_process;
+
+}
+
+function process_both_test($test, $script){
+    $process_name = $test->getTestName();
+    $process_type = "both";
+
+    $parse_src_file = $test->getTestFilePath().".src";
+    $parse_out_file = $test->getTestFilePath().".tmp_parse_out";
+    $parse_err_file = $test->getTestFilePath().".tmp_parse_err";
+
+    $php_command = "php ".$script->getParseScriptFile()." <".$parse_src_file." 2>".$parse_err_file." 1>".$parse_out_file;
+
+    exec($php_command, $output, $returned_code);
+
+    $test_process = new TestProcess($process_type, $process_name, $parse_src_file);
+
+    if ($returned_code != 0){
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
+        return $test_process;
+    }
+
+    $out_file = $test->getTestFilePath().".tmp_int_out";
+    $err_file = $test->getTestFilePath().".tmp_int_err";
+    $input_file = $test->getTestFilePath().".in";
+    $out_int_file = $test->getTestFilePath().".out";
+
+    $test_process->setTmpOutFilePath($out_file);
+    $test_process->setTmpErrFilePath($err_file);
+
+    $python_exec = "python3 ".$script->getIntScriptFile()." --source=".$parse_out_file.
+        " <".$input_file." 2>".$err_file." 1>".$out_file;
+
+    exec($python_exec, $output, $returned_code);
+
+    $test_process->setExpectedExitCode(load_rc_number($test));
+    $test_process->setReturnedExitCode($returned_code);
+
+    if ($returned_code != $test_process->getExpectedExitCode()){
+
+        $test_process->setTestPassed(false);
+        $script->incFailedTestCount();
 
         return $test_process;
     }
@@ -287,23 +334,25 @@ function process_interpret_test($test, $script, $parse_tests, $key){
 }
 
 function testing($tests, $script){
-    $parse_tests = [];
-    $interpret_tests = [];
+    $processed_tests = [];
 
     foreach ($tests as $test){
         $key = $test->getTestFilePath();
-        if ($script->isParseTests()){
 
-            $parse_tests[$key] = process_parse_test($test, $script);
+        if ($script->isParseTests() and $script->isIntTests()){
+            $processed_tests[$key] = process_both_test($test, $script);
+            $script->incTotalTestCount();
+        }elseif ($script->isParseTests()){
+            $processed_tests[$key] = process_parse_test($test, $script);
             $script->incTotalTestCount();
 
         }elseif ($script->isIntTests()){
-            $interpret_tests[$key] = process_interpret_test($test, $script, $parse_tests, $key);
+            $processed_tests[$key] = process_interpret_test($test, $script);
             $script->incTotalTestCount();
         }
     }
 
     $script->setPercentage();
-    (new Output)->generateTemplate($script, $parse_tests, $interpret_tests);
+    (new Output)->generateTemplate($script, $processed_tests);
 }
 
