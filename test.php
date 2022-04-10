@@ -10,166 +10,12 @@ use JetBrains\PhpStorm\NoReturn;
 
 ini_set('display_errors','stderr');
 
+require_once("Script.php");
+require_once("TestObject.php");
+
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
 const FILE_SEPARATOR = "/";
-
-class Script {
-    private bool $recursive = false;
-    private bool $parse_only = false;
-    private bool $int_only = false;
-    private bool $noclean = false;
-    private $directory_path = null;
-    private $jexam_path = null;
-    private $parse_script_file = null;
-    private $int_script_file = null;
-
-    function get_recursive(): bool{
-        return $this->recursive;
-    }
-
-    function get_parse_only(): bool{
-        return $this->parse_only;
-    }
-
-    function get_int_only(): bool{
-        return $this->int_only;
-    }
-
-    function get_noclean(): bool{
-        return $this->noclean;
-    }
-
-    function get_directory_path(){
-        return $this->directory_path;
-    }
-
-    function get_jexampath(){
-        return $this->jexam_path;
-    }
-
-    function get_parse_script_file(){
-        return $this->parse_script_file;
-    }
-
-    function get_int_script_file(){
-        return $this->int_script_file;
-    }
-
-    function set_recursive($value){
-        $this->recursive = $value;
-    }
-
-    function set_parse_only($value){
-        $this->parse_only = $value;
-    }
-
-    function set_int_only($value){
-        $this->int_only = $value;
-    }
-
-    function set_noclean($value){
-        $this->noclean = $value;
-    }
-
-    function set_directory_path($path){
-        $this->directory_path = $path;
-    }
-
-    function set_jexampath($path){
-        $this->jexam_path = $path;
-    }
-
-    function set_parse_script_file($file_path){
-        $file = fopen($file_path, "r") or close_script(FILE_ERROR);
-        $this->parse_script_file = $file;
-    }
-
-    function set_int_script_file($file_path){
-        $file = fopen($file_path, "r") or close_script(FILE_ERROR);
-        $this->int_script_file = $file;
-    }
-}
-
-class Test{
-
-    private String $test_name;
-    private String $test_directory_path;
-    private String $test_file_path;
-
-    private bool $src_file;
-    private bool $out_file;
-    private bool $in_file;
-    private bool $rc_file;
-
-    public function __construct($test_name, $test_directory_path, $test_file_path){
-        $this->test_name = $test_name;
-        $this->test_directory_path = $test_directory_path;
-        $this->test_file_path = $test_file_path;
-
-        $this->src_file = false;
-        $this->out_file = false;
-        $this->in_file = false;
-        $this->rc_file = false;
-    }
-
-    public function getTestName(): string {
-        return $this->test_name;
-    }
-
-    public function setTestName(string $test_name): void {
-        $this->test_name = $test_name;
-    }
-
-    public function getTestDirectoryPath(): string {
-        return $this->test_directory_path;
-    }
-
-    public function setTestDirectoryPath(string $test_directory_path): void {
-        $this->test_directory_path = $test_directory_path;
-    }
-
-    public function getTestFilePath(): string {
-        return $this->test_file_path;
-    }
-
-    public function setTestFilePath(string $test_file_path): void {
-        $this->test_file_path = $test_file_path;
-    }
-
-    public function isSrcFile(): bool {
-        return $this->src_file;
-    }
-
-    public function setSrcFile(bool $src_file): void {
-        $this->src_file = $src_file;
-    }
-
-    public function isOutFile(): bool {
-        return $this->out_file;
-    }
-
-    public function setOutFile(bool $out_file): void {
-        $this->out_file = $out_file;
-    }
-
-    public function isInFile(): bool {
-        return $this->in_file;
-    }
-
-    public function setInFile(bool $in_file): void {
-        $this->in_file = $in_file;
-    }
-
-    public function isRcFile(): bool {
-        return $this->rc_file;
-    }
-
-    public function setRcFile(bool $rc_file): void {
-        $this->rc_file = $rc_file;
-    }
-
-}
 
 main($argc, $argv);
 
@@ -179,6 +25,7 @@ function main($argc, $argv){
     process_arguments($argc, $argv, $script);
     $tests = load_tests($script);
     process_extensions($tests);
+    testing($script);
 }
 
 function close_script($code){
@@ -201,28 +48,29 @@ function process_arguments($argc, $argv, $script){
                     echo "Help function\n";
                     exit(0);
                 case (bool)preg_match("'^--directory=(.+)$'", $arg, $results):
-                    $script->set_directory_path($results[1]);
+                    $script->setDirectoryPath($results[1]);
                     break;
                 case "--recursive":
-                    $script->set_recursive(true);
+                    $script->setRecursive(true);
                     break;
                 case (bool)preg_match("'^--parse-script=(.+)$'", $arg, $results):
-                    $script->set_parse_script_file($results[1]);
+                    $script->setParseScriptFile($results[1]);
                     break;
                 case (bool)preg_match("'^--int-script=(.+)$'", $arg, $results):
-                    $script->set_int_script_file($results[1]);
+                    $script->setIntScriptFile($results[1]);
                     break;
                 case "--parse-only":
-                    $script->set_parse_only(true);
+                    $script->setIntTests(false);
+
                     break;
                 case "--int-only":
-                    $script->set_int_only(true);
+                    $script->setParseTests(false);
                     break;
                 case (bool)preg_match("'^--jexampath=(.+)$'", $arg, $results):
-                    $script->set_jexampath($results[1]);
+                    $script->setJexamPath($results[1]);
                     break;
                 case "--noclean":
-                    $script->set_noclean(true);
+                    $script->setNoclean(true);
                     break;
                 default :
                     close_script(10);
@@ -245,7 +93,7 @@ function scan_directory($directory_path, $script){
         $file_path = $directory_path.FILE_SEPARATOR.$item;
 
         if (is_dir($file_path)){
-            if ($script->get_recursive() == true){
+            if ($script->isRecursive() == true){
                 array_push($files_list, ...scan_directory($file_path, $script));
             }
         }else{
@@ -257,7 +105,7 @@ function scan_directory($directory_path, $script){
 
 function load_tests($script){
 
-    $directory_path = $script->get_directory_path();
+    $directory_path = $script->getDirectoryPath();
     $tests_list = [];
     $test_files_list = scan_directory($directory_path, $script);
 
@@ -272,7 +120,7 @@ function load_tests($script){
         }
 
         if (!array_key_exists($file_path, $tests_list)){
-            $tests_list[$file_path] = new Test($name, $directory_path, $file_path);
+            $tests_list[$file_path] = new TestObject($name, $directory_path, $file_path);
         }
 
         switch ($extension){
@@ -309,8 +157,27 @@ function process_extensions($tests){
             file_put_contents($test->getTestFilePath().".out",'');
         }
         if (!$test->isRcFile()){
-            file_put_contents($test->getTestFilePath().".rc",0);
+            file_put_contents($test->getTestFilePath().".rc",'0');
         }
     }
+}
+
+function process_parse_tests(){
+    echo "Parse tests\n";
+}
+
+function process_interpret_tests(){
+    echo "Interpret tests\n";
+}
+
+function testing($script){
+
+    if ($script->isParseTests()){
+        process_parse_tests();
+    }
+    if ($script->isIntTests()){
+        process_interpret_tests();
+    }
+
 }
 
