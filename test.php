@@ -73,11 +73,11 @@ function process_arguments($argc, $argv, $script){
                     $script->setNoclean(true);
                     break;
                 default :
-                    close_script(10);
+                    close_script(ARG_ERROR);
             }
         }
     }else{
-        close_script(10);
+        close_script(ARG_ERROR);
     }
 }
 
