@@ -16,6 +16,8 @@ require_once("objects/Output.php");
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
 const FILE_SEPARATOR = "/";
+const PHP_TAG = "php";
+const PYTHON_TAG = "python3";
 
 main($argc, $argv);
 
@@ -183,7 +185,7 @@ function process_parse_test($test, $script): TestProcess
     $test_process->setTmpErrFilePath($err_file);
     $test_process->setTmpOutFilePath($out_file);
 
-    $php_command = "php ".$script->getParseScriptFile()." <".$src_file." 2>".$err_file." 1>".$out_file;
+    $php_command = PHP_TAG." ".$script->getParseScriptFile()." <".$src_file." 2>".$err_file." 1>".$out_file;
 
     exec($php_command, $output, $returned_code);
 
@@ -237,7 +239,7 @@ function process_interpret_test($test, $script): TestProcess {
     $test_process->setTmpOutFilePath($out_file);
     $test_process->setTmpErrFilePath($err_file);
 
-    $python_exec = "python3 ".$script->getIntScriptFile()." --source=".$src_file.
+    $python_exec = PYTHON_TAG." ".$script->getIntScriptFile()." --source=".$src_file.
                     " <".$input_file." 2>".$err_file." 1>".$out_file;
 
     exec($python_exec, $output, $returned_code);
@@ -278,7 +280,7 @@ function process_both_test($test, $script): TestProcess {
     $parse_out_file = $test->getTestFilePath().".tmp_parse_out";
     $parse_err_file = $test->getTestFilePath().".tmp_parse_err";
 
-    $php_command = "php ".$script->getParseScriptFile()." <".$parse_src_file." 2>".$parse_err_file." 1>".$parse_out_file;
+    $php_command = PHP_TAG." ".$script->getParseScriptFile()." <".$parse_src_file." 2>".$parse_err_file." 1>".$parse_out_file;
 
     exec($php_command, $output, $returned_code);
 
@@ -298,7 +300,7 @@ function process_both_test($test, $script): TestProcess {
     $test_process->setTmpOutFilePath($out_file);
     $test_process->setTmpErrFilePath($err_file);
 
-    $python_exec = "python3 ".$script->getIntScriptFile()." --source=".$parse_out_file.
+    $python_exec = PYTHON_TAG." ".$script->getIntScriptFile()." --source=".$parse_out_file.
         " <".$input_file." 2>".$err_file." 1>".$out_file;
 
     exec($python_exec, $output, $returned_code);
