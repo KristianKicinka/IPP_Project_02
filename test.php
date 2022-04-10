@@ -72,7 +72,7 @@ function process_arguments($argc, $argv, $script){
                     $script->setJexamPath($results[1]);
                     break;
                 case "--noclean":
-                    $script->setNoclean(true);
+                    $script->setCleanFiles(false);
                     break;
                 default :
                     close_script(ARG_ERROR);
@@ -327,6 +327,23 @@ function process_both_test($test, $script): TestProcess {
 
 }
 
+function delete_tmp_files($tests)
+{
+    $extensions = [".tmp_int_out", ".tmp_int_err", ".tmp_parse_out", ".tmp_parse_err",".tmp_parse_out.log"];
+    $files_to_delete = [];
+    foreach ($tests as $test) {
+        foreach ($extensions as $extension) {
+            $files_to_delete[] = $test->getTestFilePath() . $extension;
+        }
+    }
+
+    foreach ($files_to_delete as $file){
+        if(is_file($file)){
+            @unlink($file);
+        }
+    }
+}
+
 function testing($tests, $script){
     $processed_tests = [];
 
@@ -348,5 +365,9 @@ function testing($tests, $script){
 
     $script->setPercentage();
     (new Output)->generateTemplate($script, $processed_tests);
+
+    if($script->isCleanFiles()){
+        delete_tmp_files($tests);
+    }
 }
 

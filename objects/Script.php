@@ -5,7 +5,7 @@ class Script{
     private bool $recursive = false;
     private bool $parse_tests = true;
     private bool $int_tests = true;
-    private bool $noclean = false;
+    private bool $clean_files = true;
 
     private $directory_path;
     private $jexam_path;
@@ -104,17 +104,17 @@ class Script{
     /**
      * @return bool
      */
-    public function isNoclean(): bool
+    public function isCleanFiles(): bool
     {
-        return $this->noclean;
+        return $this->clean_files;
     }
 
     /**
-     * @param bool $noclean
+     * @param bool $clean_files
      */
-    public function setNoclean(bool $noclean): void
+    public function setCleanFiles(bool $clean_files): void
     {
-        $this->noclean = $noclean;
+        $this->clean_files = $clean_files;
     }
 
     /**
