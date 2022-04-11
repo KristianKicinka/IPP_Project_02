@@ -45,6 +45,11 @@ class Output{
                         }else{
                             echo "<p class='card-text'><b>Recursive scanning files</b> : OFF </p>".PHP_EOL;
                         }
+                        if ($script->isCleanFiles()){
+                            echo "<p class='card-text'><b>Cleaning temporary files</b> : ON </p>".PHP_EOL;
+                        }else{
+                            echo "<p class='card-text'><b>Cleaning temporary files</b> : OFF </p>".PHP_EOL;
+                        }
 
         echo "          </div>
                     </div>
