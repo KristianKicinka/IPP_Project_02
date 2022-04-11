@@ -96,7 +96,7 @@ function scan_directory($directory_path, $script): array {
 
         $file_path = $directory_path.FILE_SEPARATOR.$item;
 
-        if (is_dir($file_path)){
+        if (is_dir($file_path) == true){
             if ($script->isRecursive() == true){
                 array_push($files_list, ...scan_directory($file_path, $script));
             }
