@@ -16,8 +16,8 @@ require_once("objects/Output.php");
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
 const FILE_SEPARATOR = "/";
-const PHP_TAG = "php";
-const PYTHON_TAG = "python3";
+const PHP_TAG = "php8.1";
+const PYTHON_TAG = "python3.8";
 
 main($argc, $argv);
 
