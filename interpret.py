@@ -1,8 +1,13 @@
+# Project : IPP Projekt - 2.úloha Interpret.
+# @author Kristián Kičinka (xkicin02)
+
 import re
 import argparse
 import sys
 import xml.etree.ElementTree as ET
 
+
+# Definícia inštrukcií a počtu ich parametrov
 DEFINED_INSTRUCTIONS = {"DEFVAR": 1, "POPS": 1, "MOVE": 2, "INT2CHAR": 2, "STRLEN": 2, "TYPE": 2, "NOT": 2, "READ": 2,
                         "ADD": 3, "SUB": 3, "MUL": 3, "IDIV": 3, "LT": 3, "GT": 3, "EQ": 3, "AND": 3, "OR": 3,
                         "STRI2INT": 3, "CONCAT": 3, "GETCHAR": 3, "SETCHAR": 3, "CREATEFRAME": 0, "PUSHFRAME": 0,
@@ -10,6 +15,8 @@ DEFINED_INSTRUCTIONS = {"DEFVAR": 1, "POPS": 1, "MOVE": 2, "INT2CHAR": 2, "STRLE
                         "WRITE": 1, "EXIT": 1, "DPRINT": 1, "JUMPIFEQ": 3, "JUMPIFNEQ": 3
                         }
 
+
+# Definícia konštánt
 NO_ERROR = 0
 PARAMETER_ERROR = 10
 INPUT_FILE_READ_ERROR = 11
@@ -26,9 +33,9 @@ STRING_WORKING_ERROR = 58
 INTERNAL_ERROR = 99
 
 
-# Objects
+# Objekty
 
-
+# Objekt inštrukcia, združuje dostupné dáta o inštrukciách
 class Instruction:
 
     def __init__(self, opcode, order):
@@ -49,6 +56,7 @@ class Instruction:
         return self.arguments
 
 
+# Objekt interpret uchováva potrebné pre chod celého skriptu.
 class Interpreter:
 
     def __init__(self):
@@ -142,6 +150,7 @@ class Interpreter:
         return self.current_instruction_id
 
 
+# Objekt argument združuje a uchováva dáta o argumentoch programu.
 class Argument:
 
     def __init__(self, name, arg_type, value):
@@ -159,6 +168,7 @@ class Argument:
         return self.name
 
 
+# Objekt Variable uchováva dáta o premenných programu.
 class Variable:
     def __init__(self, name):
         self.name = name
@@ -184,9 +194,11 @@ class Variable:
         self.value = value
 
 
-# Implementation
+# Implementácia
 
 
+# @brief Funkcia zabezpečuje korektné ukončenie programu s patričným ukončovacím kódom
+# @param exit_code Ukončovací kód
 def close_script(exit_code: int):
     if exit_code == PARAMETER_ERROR:
         print(f"Chýbajúci parameter skriptu!", file=sys.stderr)
@@ -218,6 +230,7 @@ def close_script(exit_code: int):
     exit(exit_code)
 
 
+# @brief Funkcia zabezpečuje spracovanie načítaných argumentov z terminálu
 def process_arguments():
     arg_parse = argparse.ArgumentParser()
     arg_parse.add_argument("--source", nargs=1, help="Vstupný súbor s XML reprezentáciou zdrojového kódu.")
@@ -238,6 +251,8 @@ def process_arguments():
     return tmp_input_path, tmp_source_path
 
 
+# @brief Funkcia zabezpečuje načítanie xml súboru
+# @param src_file Zdrojový súbor (XML súbor)
 def load_xml_file(src_file):
     tmp_tree = None
 
@@ -255,6 +270,8 @@ def load_xml_file(src_file):
     return tmp_tree
 
 
+# @brief Funkcia zabezpečuje načítanie xml súboru
+# @param src_file Zdrojový súbor (XML súbor)
 def load_input_file(inp_file):
     if inp_file is None:
         tmp_file = sys.stdin
@@ -263,6 +280,8 @@ def load_input_file(inp_file):
     return tmp_file
 
 
+# @brief Funkcia zabezpečuje kontrolu xml súboru
+# @param tmp_tree XML strom vytvorený pomocou ElementTree
 def check_xml_file(tmp_tree):
     root = tmp_tree.getroot()
     if root.tag != "program":
@@ -282,6 +301,8 @@ def check_xml_file(tmp_tree):
                 close_script(XML_STRUCTURE_ERROR)
 
 
+# @brief Funkcia zabezpečuje načítanie inštrukcií programu
+# @param tmp_tree XML strom vytvorený pomocou ElementTree
 def load_instructions(tmp_tree):
     tmp_instructions = list()
     defined_instructions = DEFINED_INSTRUCTIONS.keys()
@@ -328,6 +349,8 @@ def load_instructions(tmp_tree):
     return tmp_instructions
 
 
+# @brief Funkcia zabezpečuje overenie duplicitných hodnôt v zadanom liste
+# @param value_list List hodnôt, ktoré je nutné overiť
 def check_duplicities(value_list: list):
     for element in value_list:
         if value_list.count(element) > 1:
@@ -335,6 +358,8 @@ def check_duplicities(value_list: list):
     return False
 
 
+# @brief Funkcia zabezpečuje kontrolu dátového typu int
+# @param value XML hodnota určená na overenie dátového typu
 def check_integer(value):
     try:
         int(value)
@@ -343,6 +368,8 @@ def check_integer(value):
         return False
 
 
+# @brief Funkcia zabezpečuje overenie argumentov inštrukcií
+# @param arguments XML List arbumentov
 def check_arguments(arguments: list):
     index = 1
     for argument in arguments:
@@ -351,6 +378,7 @@ def check_arguments(arguments: list):
         index += 1
 
 
+# @brief Funkcia zabezpečuje vyhľadanie a uloženie náveští
 def find_labels():
     for instruction in instructions:
         if instruction.get_opcode() == "LABEL":
@@ -361,11 +389,16 @@ def find_labels():
             interpreter.add_to_labels(label, index)
 
 
+# @brief Funkcia zabezpečuje overenie načítaných naveští
+# @param label kontrolované náveštie
 def check_labels(label):
     if not(label in interpreter.get_labels().keys()):
         close_script(SEMANTIC_ERROR)
 
 
+# @brief Funkcia zabezpečuje spracovanie premennej programu
+# @param var_name Názov premennej
+# @param frame_type Typ platnosti premennej
 def get_variable(var_name, frame_type):
     var_obj = None
     if frame_type == "GF":
@@ -384,6 +417,9 @@ def get_variable(var_name, frame_type):
     return var_obj
 
 
+# @brief Funkcia zabezpečuje spracovanie dát a typu symbolov
+# @param symbol Argument inštrukcie (premenná/symbol)
+# @param data_type prepínač, ktorý určuje, čo sa má spracovať
 def return_symbol_data(symbol: Argument, data_type):
     data = None
     if symbol.get_arg_type() == "var":
@@ -406,6 +442,9 @@ def return_symbol_data(symbol: Argument, data_type):
     return data
 
 
+# @brief Funkcia zabezpečuje hodnoty premennej alebo symbolu
+# @param tmp_value hodnota premennej alebo symbolu
+# @param value_type prepínač, ktorý určuje, dátový typ
 def process_value(tmp_value, value_type):
     new_value = tmp_value
     if value_type == "string":
@@ -431,6 +470,9 @@ def process_value(tmp_value, value_type):
     return new_value
 
 
+# @brief Funkcia zabezpečuje spracovanie aritmetických operácií programu
+# @param instruction spracovávaná inštrukcia
+# @param operation prepínač, ktorý určuje, typ operácie
 def process_aritmetic_operation(instruction, operation):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -463,6 +505,9 @@ def process_aritmetic_operation(instruction, operation):
     var_obj.set_type("int")
 
 
+# @brief Funkcia zabezpečuje spracovanie relačných operácií programu
+# @param instruction spracovávaná inštrukcia
+# @param operation prepínač, ktorý určuje, typ operácie
 def process_relation_operands(instruction, operation):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -504,6 +549,9 @@ def process_relation_operands(instruction, operation):
     var_obj.set_type("bool")
 
 
+# @brief Funkcia zabezpečuje spracovanie logických operácií programu
+# @param instruction spracovávaná inštrukcia
+# @param operation prepínač, ktorý určuje, typ operácie
 def process_logic_operators(instruction, operation):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -530,6 +578,8 @@ def process_logic_operators(instruction, operation):
     var_obj.set_type("bool")
 
 
+# @brief Funkcia zabezpečuje získanie názvu a typu platnosti premennej z argumentu
+# @param instruction Spracovávaná inštrukcia
 def get_variable_name_and_frame_type(instruction):
     var = instruction.get_arguments()[0].get_value()
     var_name = var[3:]
@@ -540,6 +590,8 @@ def get_variable_name_and_frame_type(instruction):
 # Execute functions
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie DEFVAR
+# @param instruction Spracovávaná inštrukcia
 def execute_defvar(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj = Variable(var_name)
@@ -558,6 +610,8 @@ def execute_defvar(instruction):
         interpreter.add_to_temporary_frame(var_name, var_obj)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie POPS
+# @param instruction Spracovávaná inštrukcia
 def execute_pops(instruction):
     if len(interpreter.get_data_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
@@ -579,6 +633,8 @@ def execute_pops(instruction):
     var_obj.set_value(value)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie MOVE
+# @param instruction Spracovávaná inštrukcia
 def execute_move(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -592,6 +648,8 @@ def execute_move(instruction):
     var_obj.set_type(symbol_type)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie INT2CHAR
+# @param instruction Spracovávaná inštrukcia
 def execute_int2char(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -612,6 +670,8 @@ def execute_int2char(instruction):
     var_obj.set_type("string")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie STRLEN
+# @param instruction Spracovávaná inštrukcia
 def execute_strlen(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -630,6 +690,8 @@ def execute_strlen(instruction):
     var_obj.set_type("int")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie TYPE
+# @param instruction Spracovávaná inštrukcia
 def execute_type(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -644,6 +706,8 @@ def execute_type(instruction):
     var_obj.set_type("string")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie NOT
+# @param instruction Spracovávaná inštrukcia
 def execute_not(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -662,6 +726,8 @@ def execute_not(instruction):
     var_obj.set_type("bool")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie READ
+# @param instruction Spracovávaná inštrukcia
 def execute_read(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -695,6 +761,8 @@ def execute_read(instruction):
     var_obj.set_type(symbol_value)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie STRI2INT
+# @param instruction Spracovávaná inštrukcia
 def execute_stri2int(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -721,6 +789,8 @@ def execute_stri2int(instruction):
         close_script(STRING_WORKING_ERROR)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie CONCAT
+# @param instruction Spracovávaná inštrukcia
 def execute_concat(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -743,6 +813,8 @@ def execute_concat(instruction):
     var_obj.set_type("string")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie GETCHAR
+# @param instruction Spracovávaná inštrukcia
 def execute_getchar(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -768,6 +840,8 @@ def execute_getchar(instruction):
     var_obj.set_type("string")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie SETCHAR
+# @param instruction Spracovávaná inštrukcia
 def execute_setchar(instruction):
     var_name, frame_type = get_variable_name_and_frame_type(instruction)
     var_obj: Variable = get_variable(var_name, frame_type)
@@ -799,21 +873,29 @@ def execute_setchar(instruction):
     var_obj.set_type("string")
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie CREATEFRAME
+# @param instruction Spracovávaná inštrukcia
 def execute_createframe(instruction):
     interpreter.create_temporary_frame()
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie PUSHFRAME
+# @param instruction Spracovávaná inštrukcia
 def execute_pushframe(instruction):
     tmp_frame = interpreter.get_temporary_frame()
     interpreter.add_to_frame_stack(tmp_frame)
     interpreter.temporary_frame = None
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie POPFRAME
+# @param instruction Spracovávaná inštrukcia
 def execute_popframe(instruction):
     local_frame = interpreter.frame_stack_pop()
     interpreter.temporary_frame = local_frame
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie RETURN
+# @param instruction Spracovávaná inštrukcia
 def execute_return(instruction):
     if len(interpreter.get_call_stack()) == 0:
         close_script(MISSING_VALUE_ERROR)
@@ -821,6 +903,8 @@ def execute_return(instruction):
     interpreter.current_instruction_id = position
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie BREAK
+# @param instruction Spracovávaná inštrukcia
 def execute_break(instruction):
     current_inst_id = interpreter.get_current_instruction_id()
     processed_instructions_count = current_inst_id - 1
@@ -843,6 +927,8 @@ def execute_break(instruction):
             print(f"{var.get_name()} - {var.get_value()}", file=sys.stderr)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie CALL
+# @param instruction Spracovávaná inštrukcia
 def execute_call(instruction):
     position = interpreter.get_current_instruction_id()
     interpreter.add_to_call_stack(position)
@@ -852,6 +938,8 @@ def execute_call(instruction):
     interpreter.current_instruction_id = new_index
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie JUMP
+# @param instruction Spracovávaná inštrukcia
 def execute_jump(instruction):
     label = instruction.get_arguments()[0].get_value()
     check_labels(label)
@@ -859,6 +947,8 @@ def execute_jump(instruction):
     interpreter.current_instruction_id = new_index
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie PUSHS
+# @param instruction Spracovávaná inštrukcia
 def execute_pushs(instruction):
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
@@ -866,6 +956,8 @@ def execute_pushs(instruction):
     interpreter.add_to_data_stack(symbol_value)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie WRITE
+# @param instruction Spracovávaná inštrukcia
 def execute_write(instruction):
     symbol = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
@@ -884,6 +976,8 @@ def execute_write(instruction):
     print(symbol_value, end='')
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie EXIT
+# @param instruction Spracovávaná inštrukcia
 def execute_exit(instruction):
     symbol: Argument = instruction.get_arguments()[0]
     symbol_value = return_symbol_data(symbol, "value")
@@ -892,12 +986,16 @@ def execute_exit(instruction):
     exit(int(symbol_value))
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie DPRINT
+# @param instruction Spracovávaná inštrukcia
 def execute_dprint(instruction):
     symbol: Argument = instruction.get_arguments()[0]
     symbol_val = return_symbol_data(symbol, "value")
     print(symbol_val, file=sys.stderr)
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie JUMPIFEQ
+# @param instruction Spracovávaná inštrukcia
 def execute_jumpifeq(instruction):
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
@@ -920,6 +1018,8 @@ def execute_jumpifeq(instruction):
         interpreter.current_instruction_id = new_index
 
 
+# @brief Funkcia zabezpečuje vykonanie inštrukcie JUMPIFNEQ
+# @param instruction Spracovávaná inštrukcia
 def execute_jumpifneq(instruction):
     symbol_1 = instruction.get_arguments()[1]
     symbol_2 = instruction.get_arguments()[2]
@@ -941,6 +1041,7 @@ def execute_jumpifneq(instruction):
         interpreter.current_instruction_id = new_index
 
 
+# @brief Funkcia zabezpečuje identifikáciu inštrukcií na spracovanie
 def interpret_instructions():
     while interpreter.get_current_instruction_id() < len(instructions):
         instruction = instructions[interpreter.get_current_instruction_id()]
@@ -1020,6 +1121,7 @@ def interpret_instructions():
         interpreter.increase_current_instruction()
 
 
+# @brief Hlavná funckia
 if __name__ == '__main__':
     input_path, source_path = process_arguments()
     tree = load_xml_file(source_path)
