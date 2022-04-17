@@ -1,11 +1,22 @@
 <?php
 
+/***
+ * Projekt : IPP projekt, časť č.2 (Test PHP 8.1)
+ * @file Output.php
+ * @author Kristián Kičinka (xkicin02)
+ */
+
 namespace objects;
 class Output
 {
     private string $title = "IPP 2022 Testovací skript";
 
-
+    /**
+     * @brief Funkcia zabezpečuje generovanie základnej šablóny stránky
+     * @param $script - Objekt združujúci informácie o python skripte
+     * @param $tests - Zoznam test procesov (spracovanćh testov)
+     * @return void
+     */
     function generateTemplate($script, $tests)
     {
         echo "<!DOCTYPE html>" . PHP_EOL;
@@ -34,6 +45,11 @@ class Output
 
     }
 
+    /**
+     * @brief Funkcia generuje hlavičku s konfiguračnými údajmi a komplexnými údajmi o testoch
+     * @param $script - Objekt združujúci informácie o python skripte
+     * @return void
+     */
     static function generate_subheader($script)
     {
         echo "
@@ -80,6 +96,11 @@ class Output
         " . PHP_EOL;
     }
 
+    /**
+     * @brief Funkcia zabezpečuje generovanie testovacieho výstupu
+     * @param $test - Testovací proces (spracovaný test)
+     * @return void
+     */
     static function generate_test($test)
     {
         echo "
