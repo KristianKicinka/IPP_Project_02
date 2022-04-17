@@ -26,6 +26,7 @@ const PYTHON_TAG = "python3.8";
 
 main($argc, $argv);
 
+// Hlavná funkcia
 function main($argc, $argv){
     $script = new Script();
     array_shift($argv);
@@ -35,6 +36,11 @@ function main($argc, $argv){
     testing($tests, $script);
 }
 
+/**
+ * @brief Funkcia zabezpečuje ukončenie skriptu s patričným návratovým kódom
+ * @param $code - Návratový kód
+ * @return void
+ */
 function close_script($code){
     switch ($code){
         case ARG_ERROR:
@@ -47,6 +53,13 @@ function close_script($code){
     exit($code);
 }
 
+/**
+ * @brief Funkcia zabezpečuje spracovanie argumentov skriptu
+ * @param $argc - Počet arbumentov
+ * @param $argv - Argumeny
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return void
+ */
 function process_arguments($argc, $argv, $script){
     if ($argc > 1){
         foreach($argv as $arg){
@@ -88,6 +101,13 @@ function process_arguments($argc, $argv, $script){
     }
 }
 
+
+/**
+ * @brief Funkcia zabezpečuje prehľadanie testovacieho adresára a uloženie zoznamu súborov
+ * @param $directory_path - Cesta k testovaciemu adresáru
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return array
+ */
 function scan_directory($directory_path, $script): array {
     $files_list = [];
 
@@ -103,6 +123,7 @@ function scan_directory($directory_path, $script): array {
 
         if (is_dir($file_path) == true){
             if ($script->isRecursive() == true){
+                // Rekurzívne volanie funkcie skenovania adresára a uloženie hodnôt do zoznamu
                 array_push($files_list, ...scan_directory($file_path, $script));
             }
         }else{
@@ -112,6 +133,11 @@ function scan_directory($directory_path, $script): array {
     return $files_list;
 }
 
+/**
+ * @brief Funkcia zabezpečuje načítanie testovacích súborov a vytvorenie testovacích objektov
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return array
+ */
 function load_tests($script): array {
 
     $directory_path = $script->getDirectoryPath();
@@ -154,6 +180,11 @@ function load_tests($script): array {
 
 }
 
+/**
+ * @brief Funkcia zabezpečuje spracovanie prípon súborov, generovanie chýbajúcich súborov
+ * @param $tests - Zoznam testovacích objektov (testov)
+ * @return void
+ */
 function process_extensions($tests){
     foreach ($tests as $test){
 
@@ -172,11 +203,22 @@ function process_extensions($tests){
     }
 }
 
+/**
+ * @brief Funkcia zabezpečuje spracovanie návratových kódov
+ * @param $test - Testovací objekt
+ * @return bool|string
+ */
 function load_rc_number($test): bool|string {
     $rc_file = $test->getTestFilePath().".rc";
     return file_get_contents($rc_file);
 }
 
+/**
+ * @brief Funkcia zabezpečuje spracovanie parse testov
+ * @param $test - Testovací objekt
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return TestProcess
+ */
 function process_parse_test($test, $script): TestProcess
 {
     $process_name = $test->getTestName();
@@ -186,10 +228,12 @@ function process_parse_test($test, $script): TestProcess
     $out_file = $test->getTestFilePath().".tmp_parse_out";
     $err_file = $test->getTestFilePath().".tmp_parse_err";
 
+    // Vytvorenie testovacieho procesu
     $test_process = new TestProcess($process_type, $process_name, $src_file);
     $test_process->setTmpErrFilePath($err_file);
     $test_process->setTmpOutFilePath($out_file);
 
+    // Vytvorenie php príkazu pre parse.php
     $php_command = PHP_TAG." ".$script->getParseScriptFile()." <".$src_file." 2>".$err_file." 1>".$out_file;
 
     exec($php_command, $output, $returned_code);
@@ -205,6 +249,7 @@ function process_parse_test($test, $script): TestProcess
         return $test_process;
     }
 
+    // Vytvorenie a spustenie porovnávania výstupov pomocou probramu jexamxml
     $expected_out = $test->getTestFilePath().".out";
     $jexam_jar = $script->getJexamPath().FILE_SEPARATOR."jexamxml.jar";
     $jexam_options = $script->getJexamPath().FILE_SEPARATOR."options";
@@ -224,6 +269,12 @@ function process_parse_test($test, $script): TestProcess
     return $test_process;
 }
 
+/**
+ * @brief Funkcia zabezpečuje spracovanie interpret testov
+ * @param $test - Testovací objekt
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return TestProcess
+ */
 function process_interpret_test($test, $script): TestProcess {
 
     $process_name = $test->getTestName();
@@ -231,17 +282,18 @@ function process_interpret_test($test, $script): TestProcess {
 
     $src_file = $test->getTestFilePath().".src";
 
-
     $out_file = $test->getTestFilePath().".tmp_int_out";
     $err_file = $test->getTestFilePath().".tmp_int_err";
     $input_file = $test->getTestFilePath().".in";
     $out_int_file = $test->getTestFilePath().".out";
 
+    // Vytvorenie testovacieho procesu
     $test_process = new TestProcess($process_type, $process_name, $src_file);
 
     $test_process->setTmpOutFilePath($out_file);
     $test_process->setTmpErrFilePath($err_file);
 
+    // Vytvorenie python príkazu pre interpret.py
     $python_exec = PYTHON_TAG." ".$script->getIntScriptFile()." --source=".$src_file.
                     " <".$input_file." 2>".$err_file." 1>".$out_file;
 
@@ -258,6 +310,7 @@ function process_interpret_test($test, $script): TestProcess {
         return $test_process;
     }
 
+    // Vytvorenie a spustenie príkazu pre zistenie rozdielov vo výstupoch
     $diff_exec = "diff ".$out_int_file." ".$out_file;
     exec($diff_exec, $output, $returned_code_cmp);
 
@@ -273,6 +326,12 @@ function process_interpret_test($test, $script): TestProcess {
 
 }
 
+/**
+ * @brief Funkcia zabezpečuje spracovanie testov parsera a zároveň interpretu
+ * @param $test - Testovací objekt
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return TestProcess
+ */
 function process_both_test($test, $script): TestProcess {
     $process_name = $test->getTestName();
     $process_type = "both";
@@ -281,10 +340,12 @@ function process_both_test($test, $script): TestProcess {
     $parse_out_file = $test->getTestFilePath().".tmp_parse_out";
     $parse_err_file = $test->getTestFilePath().".tmp_parse_err";
 
+    // Vytvorenie php príkazu pre parse.php
     $php_command = PHP_TAG." ".$script->getParseScriptFile()." <".$parse_src_file." 2>".$parse_err_file." 1>".$parse_out_file;
 
     exec($php_command, $output, $returned_code);
 
+    // Vytvorenie testovacieho procesu
     $test_process = new TestProcess($process_type, $process_name, $parse_src_file);
 
     if ($returned_code != 0){
@@ -301,6 +362,7 @@ function process_both_test($test, $script): TestProcess {
     $test_process->setTmpOutFilePath($out_file);
     $test_process->setTmpErrFilePath($err_file);
 
+    // Vytvorenie python príkazu pre interpret.py
     $python_exec = PYTHON_TAG." ".$script->getIntScriptFile()." --source=".$parse_out_file.
         " <".$input_file." 2>".$err_file." 1>".$out_file;
 
@@ -317,6 +379,7 @@ function process_both_test($test, $script): TestProcess {
         return $test_process;
     }
 
+    // Vytvorenie a spustenie príkazu pre zistenie rozdielov vo výstupoch
     $diff_exec = "diff ".$out_int_file." ".$out_file;
     exec($diff_exec, $output, $returned_code_cmp);
 
@@ -332,6 +395,11 @@ function process_both_test($test, $script): TestProcess {
 
 }
 
+/**
+ * @brief Funkcia ktorá zabezpečuje vymazanie dočasných súborov
+ * @param $tests - Testovací objekt
+ * @return void
+ */
 function delete_tmp_files($tests)
 {
     $extensions = [".tmp_int_out", ".tmp_int_err", ".tmp_parse_out", ".tmp_parse_err",".tmp_parse_out.log"];
@@ -349,6 +417,12 @@ function delete_tmp_files($tests)
     }
 }
 
+/**
+ * @brief Funkcia zabezpečuje samotné testovanie, generovanie testovacích procesov a generovanie HTML výstupu
+ * @param $tests - Zoznam testovacích objektov
+ * @param $script - Objekt združujúci informácie o python skripte
+ * @return void
+ */
 function testing($tests, $script){
     $processed_tests = [];
 
@@ -368,9 +442,11 @@ function testing($tests, $script){
         }
     }
 
+    // Generovanie HTML výstupu
     $script->setPercentage();
     (new Output)->generateTemplate($script, $processed_tests);
 
+    // Vymazávanie dočasných súborov
     if($script->isCleanFiles()){
         delete_tmp_files($tests);
     }

@@ -66,6 +66,7 @@ class Output
                                 <div class='col-sm-6'>
                                     <p class='card-text'><b>Celkový počet testov</b> : " . $script->getTotalTestCount() . "</p>
                                     <p class='card-text'><b>Počet úspešných testov</b> : " . $script->getPassedTestCount() . "</p>
+                                    <p class='card-text'><b>Počet neúspešných testov</b> : " . $script->getTotalTestCount() - $script->getPassedTestCount() . "</p>
                                 </div>
                                 <div class='col-sm-6'>
                                     <p class='card-text'><b>Percentuálny výsledok :</b></p>
