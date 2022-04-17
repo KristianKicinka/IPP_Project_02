@@ -9,6 +9,7 @@
 namespace objects;
 use const FILE_SEPARATOR;
 
+// Objekt skript zabezpečuje reprezentáciu dát celkového skriptu
 class Script
 {
 

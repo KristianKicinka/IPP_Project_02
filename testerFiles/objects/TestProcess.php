@@ -7,6 +7,8 @@
  */
 
 namespace objects;
+
+// Objekt TestProcess zabezpečuje reprezentáciu dát o testovacom procese, ktorý uchováva výsledky testov
 class TestProcess
 {
     private string $type;

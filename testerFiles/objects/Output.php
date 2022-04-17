@@ -7,6 +7,8 @@
  */
 
 namespace objects;
+
+// Objekt Output zabezpečuje generovanie HTML výstupu
 class Output
 {
     private string $title = "IPP 2022 Testovací skript";

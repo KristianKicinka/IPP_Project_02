@@ -7,6 +7,8 @@
  */
 
 namespace objects;
+
+// Objekt TestObject ochováva prvotné informácie o teste
 class TestObject
 {
 
