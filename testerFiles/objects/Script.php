@@ -1,5 +1,11 @@
 <?php
 
+/***
+ * Projekt : IPP projekt, časť č.2 (Test PHP 8.1)
+ * @file Script.php
+ * @author Kristián Kičinka (xkicin02)
+ */
+
 namespace objects;
 use const FILE_SEPARATOR;
 
