@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-                <title>IPP 2022 Tests</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>IPP 2022 Testovací skript</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" charset='UTF-8'>
                 <!-- Bootstrap -->
-                <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+                <link href="testerFiles/css/bootstrap.css" rel="stylesheet" media="screen">
              </head>
             
 <body>
     <div class='navbar navbar navbar-dark bg-dark shadow-sm'>
                     <div class='container'>
-                        <a href='#' class='navbar-brand d-flex align-items-center'>IPP 2022 Tests</a>    
+                        <a href='#' class='navbar-brand d-flex align-items-center'>IPP 2022 Testovací skript</a>    
                     </div>
                  </div>
     <div class='container pt-sm-4 pb-sm-4'>
@@ -18,26 +18,26 @@
             <div class='row pb-sm-4'>
                 <div class='col-sm-6'>
                     <div class='card h-100'>
-                        <h5 class='card-header'>Testing Configuration</h5>
+                        <h5 class='card-header'>Konfigurácia testov</h5>
                         <div class='card-body'>
-                            <p class='card-text'><b>Testing directory</b> : test/supplementary-tests/both</p>
+                            <p class='card-text'><b>Testovací adresár</b> : tests/supplementary-tests/parse-only</p>
             
-<p class='card-text'><b>Recursive scanning files</b> : ON </p>
-<p class='card-text'><b>Cleaning temporary files</b> : ON </p>
+<p class='card-text'><b>Rekurzívne prehľadávanie súborov</b> : Zapnuté </p>
+<p class='card-text'><b>Vymazávanie dočasných súborov</b> : Zapnuté </p>
           </div>
                     </div>
                 </div>
                 <div class='col-sm-6'>
                     <div class='card h-100'>
-                        <h5 class='card-header'>Testing results</h5>
+                        <h5 class='card-header'>Výsledky testov</h5>
                         <div class='card-body'>
                             <div class='row'>
                                 <div class='col-sm-6'>
-                                    <p class='card-text'><b>Total tests count</b> : 3</p>
-                                    <p class='card-text'><b>Passed tests</b> : 3</p>
+                                    <p class='card-text'><b>Celkový počet testov</b> : 3</p>
+                                    <p class='card-text'><b>Počet úspešných testov</b> : 3</p>
                                 </div>
                                 <div class='col-sm-6'>
-                                    <p class='card-text'><b>Percentage :</b></p>
+                                    <p class='card-text'><b>Percentuálny výsledok :</b></p>
                                     <h1>100 %</h1>
                                 </div>
                             </div>
@@ -51,14 +51,15 @@
             <div class='col'>
                 <div class='card'>
                     <div class='card-header text-white bg-success'>
-                        <i style='float: left; padding-right: 2%'><b>Test name</b> : error_string_out_of_range</i>
-                        <i style='float: left; padding-right: 2%'><b>Test type</b> : both</i>
+                        <i style='float: left; padding-right: 2%'><b>Názov testu</b> : read_test</i>
+                        <i style='float: left; padding-right: 2%'><b>Typ testu</b> : parse</i>
                     </div>
                     <div class='row'>
                         <div class='col'>
                             <div class='card-body border border-top-0 border-secondary'>
                              
-<p class='text-dark'>Test passed !</p>
+<p class='text-dark' ><b>Testovací súbor :</b> tests/supplementary-tests/parse-only/read_test</p>
+<p class='text-dark'>Test prešiel !</p>
               </div>
                         </div>
                     </div>
@@ -71,14 +72,15 @@
             <div class='col'>
                 <div class='card'>
                     <div class='card-header text-white bg-success'>
-                        <i style='float: left; padding-right: 2%'><b>Test name</b> : read_test</i>
-                        <i style='float: left; padding-right: 2%'><b>Test type</b> : both</i>
+                        <i style='float: left; padding-right: 2%'><b>Názov testu</b> : simple_tag</i>
+                        <i style='float: left; padding-right: 2%'><b>Typ testu</b> : parse</i>
                     </div>
                     <div class='row'>
                         <div class='col'>
                             <div class='card-body border border-top-0 border-secondary'>
                              
-<p class='text-dark'>Test passed !</p>
+<p class='text-dark' ><b>Testovací súbor :</b> tests/supplementary-tests/parse-only/simple_tag</p>
+<p class='text-dark'>Test prešiel !</p>
               </div>
                         </div>
                     </div>
@@ -91,14 +93,15 @@
             <div class='col'>
                 <div class='card'>
                     <div class='card-header text-white bg-success'>
-                        <i style='float: left; padding-right: 2%'><b>Test name</b> : spec_example</i>
-                        <i style='float: left; padding-right: 2%'><b>Test type</b> : both</i>
+                        <i style='float: left; padding-right: 2%'><b>Názov testu</b> : write_test</i>
+                        <i style='float: left; padding-right: 2%'><b>Typ testu</b> : parse</i>
                     </div>
                     <div class='row'>
                         <div class='col'>
                             <div class='card-body border border-top-0 border-secondary'>
                              
-<p class='text-dark'>Test passed !</p>
+<p class='text-dark' ><b>Testovací súbor :</b> tests/supplementary-tests/parse-only/write_test</p>
+<p class='text-dark'>Test prešiel !</p>
               </div>
                         </div>
                     </div>

@@ -6,17 +6,22 @@
  * @author Kristián Kičinka (xkicin02)
  */
 
+use objects\Output;
+use objects\Script;
+use objects\TestObject;
+use objects\TestProcess;
+
 ini_set('display_errors','stderr');
 
-require_once("objects/Script.php");
-require_once("objects/TestObject.php");
-require_once("objects/TestProcess.php");
-require_once("objects/Output.php");
+require_once("testerFiles/objects/Script.php");
+require_once("testerFiles/objects/TestObject.php");
+require_once("testerFiles/objects/TestProcess.php");
+require_once("testerFiles/objects/Output.php");
 
 const ARG_ERROR = 10;
 const FILE_ERROR = 41;
 const FILE_SEPARATOR = "/";
-const PHP_TAG = "php8.1";
+const PHP_TAG = "php";
 const PYTHON_TAG = "python3.8";
 
 main($argc, $argv);

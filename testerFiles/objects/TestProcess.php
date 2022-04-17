@@ -1,16 +1,17 @@
 <?php
 
+namespace objects;
 class TestProcess
 {
-    private String $type;
-    private String $name;
-    private String $testing_file;
+    private string $type;
+    private string $name;
+    private string $testing_file;
 
     private int $returned_exit_code;
     private int $expected_exit_code;
 
-    private String $tmp_out_file_path;
-    private String $tmp_err_file_path;
+    private string $tmp_out_file_path;
+    private string $tmp_err_file_path;
 
     private bool $test_passed;
 
@@ -153,8 +154,6 @@ class TestProcess
     {
         $this->test_passed = $test_passed;
     }
-
-
 
 
 }

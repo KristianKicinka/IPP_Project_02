@@ -1,17 +1,20 @@
 <?php
 
-class TestObject{
+namespace objects;
+class TestObject
+{
 
-    private String $test_name;
-    private String $test_directory_path;
-    private String $test_file_path;
+    private string $test_name;
+    private string $test_directory_path;
+    private string $test_file_path;
 
     private bool $src_file;
     private bool $out_file;
     private bool $in_file;
     private bool $rc_file;
 
-    public function __construct($test_name, $test_directory_path, $test_file_path){
+    public function __construct($test_name, $test_directory_path, $test_file_path)
+    {
         $this->test_name = $test_name;
         $this->test_directory_path = $test_directory_path;
         $this->test_file_path = $test_file_path;

@@ -1,6 +1,10 @@
 <?php
 
-class Script{
+namespace objects;
+use const FILE_SEPARATOR;
+
+class Script
+{
 
     private bool $recursive = false;
     private bool $parse_tests = true;
@@ -17,11 +21,12 @@ class Script{
     private int $failed_test_count;
     private int $percentage;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->directory_path = getcwd();
         $this->jexam_path = "/pub/courses/ipp/jexamxml/";
-        $this->parse_script_file = getcwd().FILE_SEPARATOR."parse.php";
-        $this->int_script_file = getcwd().FILE_SEPARATOR."interpret.py";
+        $this->parse_script_file = getcwd() . FILE_SEPARATOR . "parse.php";
+        $this->int_script_file = getcwd() . FILE_SEPARATOR . "interpret.py";
         $this->total_test_count = 0;
         $this->percentage = 0;
         $this->failed_test_count = 0;
@@ -29,27 +34,33 @@ class Script{
 
     }
 
-    public function incTotalTestCount(){
+    public function incTotalTestCount()
+    {
         $this->total_test_count++;
     }
 
-    public function incPassedTestCount(){
+    public function incPassedTestCount()
+    {
         $this->passed_test_count++;
     }
 
-    public function incFailedTestCount(){
+    public function incFailedTestCount()
+    {
         $this->failed_test_count++;
     }
 
-    public function setPercentage(){
-        $this->percentage = intval(($this->passed_test_count/$this->total_test_count)*100);
+    public function setPercentage()
+    {
+        $this->percentage = intval(($this->passed_test_count / $this->total_test_count) * 100);
     }
 
-    public function getPercentage(){
+    public function getPercentage()
+    {
         return $this->percentage;
     }
 
-    public function getFailedTestsCount(){
+    public function getFailedTestsCount()
+    {
         return $this->failed_test_count;
     }
 
@@ -228,8 +239,6 @@ class Script{
     {
         $this->failed_test_count = $failed_test_count;
     }
-
-
 
 
 }
