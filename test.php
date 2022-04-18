@@ -44,10 +44,10 @@ function main($argc, $argv){
 function close_script($code){
     switch ($code){
         case ARG_ERROR:
-            echo "Arguments error!\n";
+            echo "Chyba argumentu!\n";
             break;
         case FILE_ERROR:
-            echo "File error!\n";
+            echo "Súborová chyba!\n";
             break;
     }
     exit($code);
@@ -74,10 +74,14 @@ function process_arguments($argc, $argv, $script){
                     $script->setRecursive(true);
                     break;
                 case (bool)preg_match("'^--parse-script=(.+)$'", $arg, $results):
+                    if (!(is_file($results[1]) and is_readable($results[1])))
+                        close_script(FILE_ERROR);
                     $script->setParseScriptFile($results[1]);
                     break;
                 case (bool)preg_match("'^--int-script=(.+)$'", $arg, $results):
                     $script->setIntScriptFile($results[1]);
+                    if (!(is_file($results[1]) and is_readable($results[1])))
+                        close_script(FILE_ERROR);
                     break;
                 case "--parse-only":
                     $script->setIntTests(false);
@@ -87,6 +91,8 @@ function process_arguments($argc, $argv, $script){
                     $script->setParseTests(false);
                     break;
                 case (bool)preg_match("'^--jexampath=(.+)$'", $arg, $results):
+                    if (!is_dir($results[1]))
+                        close_script(FILE_ERROR);
                     $script->setJexamPath($results[1]);
                     break;
                 case "--noclean":
@@ -111,24 +117,29 @@ function process_arguments($argc, $argv, $script){
 function scan_directory($directory_path, $script): array {
     $files_list = [];
 
-    $dir_content = scandir($directory_path);
+    if (is_dir($directory_path) == true){
 
-    foreach ($dir_content as $item){
+        $dir_content = scandir($directory_path);
+        foreach ($dir_content as $item){
 
-        if ($item == "." or $item == ".." or ""){
-            continue;
-        }
-
-        $file_path = $directory_path.FILE_SEPARATOR.$item;
-
-        if (is_dir($file_path) == true){
-            if ($script->isRecursive() == true){
-                // Rekurzívne volanie funkcie skenovania adresára a uloženie hodnôt do zoznamu
-                array_push($files_list, ...scan_directory($file_path, $script));
+            if ($item == "." or $item == ".." or ""){
+                continue;
             }
-        }else{
-            $files_list[] = pathinfo($file_path);
+
+            $file_path = $directory_path.FILE_SEPARATOR.$item;
+
+            if (is_dir($file_path) == true){
+                if ($script->isRecursive() == true){
+                    // Rekurzívne volanie funkcie skenovania adresára a uloženie hodnôt do zoznamu
+                    array_push($files_list, ...scan_directory($file_path, $script));
+                }
+            }else if (is_file($file_path) == true){
+                $files_list[] = pathinfo($file_path);
+            }
+
         }
+    }else{
+        close_script(FILE_ERROR);
     }
     return $files_list;
 }
