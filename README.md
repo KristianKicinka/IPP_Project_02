@@ -3,6 +3,9 @@ Jméno a příjmení: Kristián Kičinka <br>
 Login: xkicin02
 
 ## Interpret
+
+### Príklad spustenia programu
+``` python3.8 interpret.py --source=xml_file.src < input_file.in > output_file.out ```
 ### Členenie programu na základe funkcionality
 * Načítanie a kontrola vstupných argumentov skriptu.
 * Načítanie a kontrola dát zo vstupných súborov
