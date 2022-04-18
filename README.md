@@ -28,7 +28,7 @@ pre interpret a zdrojový súbor, ktorý obsahuje zdrojový XML kód. Načítani
 zabezpečuje funkcia _load_input_file()_. Načitanie XML súboru zabezpečuje funkcia 
 _load_xml_file()_. Po načítaní XML súboru je nutné vykonať kontrolu jeho obsahu, 
 jedná sa o správnu štruktúru XML kódu. Tento úkon vakonáva funkcia _check_xml_file()_. 
-Kontroluje sa existenica hlavičky, prítomnosť inštrukcií a ich argumenotv. 
+Kontroluje sa existenica hlavičky, prítomnosť inštrukcií a ich argumentov. 
 
 #### Načítanie a kontrola inštrukcií
 Načítanie a kontrola inštrukcií programu prebieha vo funkcii _load_instructions()_. 
@@ -37,7 +37,7 @@ ktorý reprezentuje inštrukciu a uchováva jej dostupné dáta. Kontroluje sa p
 tj. či je takáto inštrukcia definovaná v zadanej sade inštrukcií. Je nutné overovať aj správnosť 
 poradia inštrukcií, počet a typ ich argumentov. Pri spracovaní argumentov využívame objekt 
 _Argument_, ktorý uchováva dostupné o argumente inštrukcie. Jednotlivé inštrukcie sú vo 
-forme objektov ukladané do zoznamu inštrucií.
+forme objektov ukladané do zoznamu inštrukcií.
 
 #### Vyhľadanie a uloženie návestí
 Interpret musí podporovať možnosť podmienených a nepodmienených skokov v programe, 
@@ -117,7 +117,7 @@ sa príkaz pre jexamxml. Výsledok testu sa zapíše do patričného _TestProces
 #### Interpret testy
 Pri nastavení testovania len interpret testov sa spúšťa funkcia _process_interpret_test()_. Opäť sa vytvorí nový 
 _TestProcess_ objekt, naplní sa dátami a následne sa pristúpi k vytvoreniu a spusteniu príkazov pre chod skriptu 
-_interpret.py_. Skript sa spúšťa s dostupnými testovacími súbormi. Vásledky testu sa opäť vložia do _TestProcessu_.
+_interpret.py_. Skript sa spúšťa s dostupnými testovacími súbormi. Výsledky testu sa opäť vložia do _TestProcessu_.
 
 #### Both testy
 Both testy sú akýmsi spojením parse a interpret testov. Najprv sa zavádzajú parse testy. Pokiaľ nedôjde k chybe pri 
